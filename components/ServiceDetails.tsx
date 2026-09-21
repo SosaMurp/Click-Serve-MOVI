@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,13 +8,78 @@ import {
   SafeAreaView,
   ScrollView,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Alert,
+  Modal,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { api, useAuth } from './context/AuthContext';
 
 export default function ServiceDetails() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ category?: string; technicianId?: string }>();
+  const { token } = useAuth();
+  const [description, setDescription] = useState('');
+  const [street, setStreet] = useState('');
+  const [houseNumber, setHouseNumber] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [preferredDate, setPreferredDate] = useState('');
+  const [preferredTime, setPreferredTime] = useState('');
+  const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successFolio, setSuccessFolio] = useState<string | null>(null);
+
+  const pickImages = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+      quality: 0.8,
+    });
+    if (!result.canceled) setImages(result.assets.slice(0, 5));
+  };
+
+  const submitRequest = async () => {
+    if (!token) {
+      Alert.alert('Sesión requerida', 'Inicia sesión para crear una solicitud.', [{ text: 'Ir al login', onPress: () => router.replace('/' as any) }]);
+      return;
+    }
+    if (!description.trim() || !street.trim()) {
+      Alert.alert('Datos incompletos', 'Escribe la descripción y la dirección del servicio.');
+      return;
+    }
+
+    const form = new FormData();
+    form.append('categoria', params.category || 'OTROS');
+    form.append('descripcion', description.trim());
+    form.append('direccion', `${street.trim()} ${houseNumber.trim()}, ${neighborhood.trim()} CP ${postalCode.trim()}`.trim());
+    if (preferredDate.trim()) form.append('fecha_preferida', preferredDate.trim());
+    if (preferredTime.trim()) form.append('hora_preferida', preferredTime.trim());
+    if (params.technicianId && /^\d+$/.test(params.technicianId)) form.append('id_tecnico', params.technicianId);
+    images.forEach((image, index) => {
+      form.append('imagenes', { uri: image.uri, name: image.fileName || `problema-${index + 1}.jpg`, type: image.mimeType || 'image/jpeg' } as any);
+    });
+
+    setIsSubmitting(true);
+    try {
+      const response = await api.post('/api/solicitudes', form);
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error('La solicitud no fue confirmada por el servidor.');
+      }
+      const request = response.data?.solicitud;
+      setSuccessFolio(String(request?.folio || request?.id_solicitud || 'sin folio'));
+    } catch (error: any) {
+      Alert.alert('No se pudo enviar', error.response?.data?.error || 'Verifica tu conexión e intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -75,7 +140,8 @@ export default function ServiceDetails() {
                 <Feather name="map-pin" size={14} color="#7A8C9E" style={{ marginRight: 8 }} />
                 <TextInput 
                   style={[styles.input, { flex: 1, paddingHorizontal: 0, backgroundColor: 'transparent' }]} 
-                  defaultValue="Av. Melchor Ocampo"
+                  value={street}
+                  onChangeText={setStreet}
                   placeholderTextColor="#9CA8B6"
                 />
               </View>
@@ -84,7 +150,8 @@ export default function ServiceDetails() {
               <Text style={styles.label}>NÚM. CASA</Text>
               <TextInput 
                 style={styles.input} 
-                defaultValue="12-B"
+                value={houseNumber}
+                onChangeText={setHouseNumber}
                 placeholderTextColor="#9CA8B6"
               />
             </View>
@@ -96,7 +163,8 @@ export default function ServiceDetails() {
               <View style={styles.inputWithIcon}>
                 <TextInput 
                   style={[styles.input, { flex: 1, paddingHorizontal: 0, backgroundColor: 'transparent' }]} 
-                  defaultValue="Centro"
+                  value={neighborhood}
+                  onChangeText={setNeighborhood}
                   placeholderTextColor="#9CA8B6"
                 />
                 <Feather name="chevron-down" size={16} color="#7A8C9E" />
@@ -106,7 +174,8 @@ export default function ServiceDetails() {
               <Text style={styles.label}>CÓDIGO POSTAL</Text>
               <TextInput 
                 style={styles.input} 
-                defaultValue="60950"
+                value={postalCode}
+                onChangeText={setPostalCode}
                 keyboardType="numeric"
                 placeholderTextColor="#9CA8B6"
               />
@@ -122,7 +191,9 @@ export default function ServiceDetails() {
                 <Feather name="calendar" size={14} color="#7A8C9E" style={{ marginRight: 8 }} />
                 <TextInput 
                   style={[styles.input, { flex: 1, paddingHorizontal: 0, backgroundColor: 'transparent' }]} 
-                  placeholder="DD/MM/AAAA"
+                  value={preferredDate}
+                  onChangeText={setPreferredDate}
+                  placeholder="AAAA-MM-DD"
                   placeholderTextColor="#9CA8B6"
                 />
               </View>
@@ -133,7 +204,9 @@ export default function ServiceDetails() {
                 <Feather name="clock" size={14} color="#7A8C9E" style={{ marginRight: 8 }} />
                 <TextInput 
                   style={[styles.input, { flex: 1, paddingHorizontal: 0, backgroundColor: 'transparent' }]} 
-                  placeholder="--:-- --"
+                  value={preferredTime}
+                  onChangeText={setPreferredTime}
+                  placeholder="HH:MM"
                   placeholderTextColor="#9CA8B6"
                 />
                 <Feather name="chevron-down" size={16} color="#7A8C9E" />
@@ -145,6 +218,8 @@ export default function ServiceDetails() {
             <Text style={styles.label}>DESCRIPCIÓN DE LA FALLA</Text>
             <TextInput 
               style={styles.textArea} 
+              value={description}
+              onChangeText={setDescription}
               placeholder="Describe brevemente el problema..."
               placeholderTextColor="#9CA8B6"
               multiline
@@ -153,19 +228,53 @@ export default function ServiceDetails() {
             />
           </View>
 
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>FOTOS DEL PROBLEMA (OPCIONAL)</Text>
+            <TouchableOpacity style={styles.photoButton} onPress={pickImages}>
+              <Feather name="paperclip" size={16} color="#0A192F" />
+              <Text style={styles.photoButtonText}>{images.length ? `${images.length} foto(s) seleccionada(s)` : 'ADJUNTAR FOTOS'}</Text>
+            </TouchableOpacity>
+          </View>
+
         </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity 
             style={styles.continueButton}
-            onPress={() => router.push('/choose-tech' as any)}
+            onPress={submitRequest}
+            disabled={isSubmitting}
           >
-            <Text style={styles.continueButtonText}>CONTINUAR</Text>
-            <Feather name="chevron-right" size={16} color="#FFFFFF" />
+            {isSubmitting ? <Text style={styles.continueButtonText}>ENVIANDO...</Text> : <>
+              <Text style={styles.continueButtonText}>ENVIAR SOLICITUD</Text>
+              <Feather name="check" size={16} color="#FFFFFF" />
+            </>}
           </TouchableOpacity>
         </View>
 
       </KeyboardAvoidingView>
+
+      <Modal visible={Boolean(successFolio)} transparent animationType="fade" onRequestClose={() => setSuccessFolio(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModal}>
+            <View style={styles.successIcon}>
+              <Feather name="check" size={24} color="#FFFFFF" />
+            </View>
+            <Text style={styles.successTitle}>¡Solicitud creada exitosamente!</Text>
+            <Text style={styles.successFolio}>Folio: {successFolio}</Text>
+            <TouchableOpacity
+              style={styles.successButton}
+              onPress={() => {
+                setSuccessFolio(null);
+                router.push('/my-requests' as any);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Ver mis solicitudes"
+            >
+              <Text style={styles.successButtonText}>VER MIS SOLICITUDES</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -193,4 +302,13 @@ const styles = StyleSheet.create({
   footer: { paddingHorizontal: 25, paddingVertical: 20, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F0F4F8' },
   continueButton: { flexDirection: 'row', backgroundColor: '#0A192F', paddingVertical: 18, borderRadius: 4, justifyContent: 'center', alignItems: 'center' },
   continueButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginRight: 10 },
+  photoButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingVertical: 15 },
+  photoButtonText: { color: '#0A192F', fontSize: 11, fontWeight: '800', letterSpacing: 1, marginLeft: 8 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(10, 25, 47, 0.35)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  successModal: { width: '100%', maxWidth: 420, backgroundColor: '#FFFFFF', borderRadius: 12, padding: 28, alignItems: 'center' },
+  successIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#2E9B62', alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
+  successTitle: { color: '#0A192F', fontSize: 19, fontWeight: '800', textAlign: 'center', marginBottom: 10 },
+  successFolio: { color: '#506174', fontSize: 15, marginBottom: 24 },
+  successButton: { width: '100%', backgroundColor: '#0A192F', borderRadius: 6, paddingVertical: 16, alignItems: 'center' },
+  successButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from './context/AuthContext';
 import {
@@ -17,6 +17,11 @@ import { Feather } from '@expo/vector-icons';
 export default function ClientDashboard() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const [search, setSearch] = useState('');
+
+  const openServices = (params: { category?: string; search?: string } = {}) => {
+    router.push({ pathname: '/service-list', params } as any);
+  };
 
   if (isLoading) {
     return (
@@ -56,7 +61,14 @@ export default function ClientDashboard() {
             placeholder="Ej. Refrigeración, Herrería..."
             placeholderTextColor="#9CA8B6"
             selectionColor="#001b3a"
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={() => openServices({ search: search.trim() || undefined })}
+            returnKeyType="search"
           />
+          <TouchableOpacity onPress={() => openServices({ search: search.trim() || undefined })} accessibilityLabel="Buscar servicios">
+            <Feather name="arrow-right" size={18} color="#0A192F" />
+          </TouchableOpacity>
         </View>
 
         {/* Sección de Categorías */}
@@ -64,7 +76,7 @@ export default function ClientDashboard() {
         
         <View style={styles.gridContainer}>
           {/* Tarjeta TECH */}
-          <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('/service-details' as any)}>
+          <TouchableOpacity style={styles.categoryCard} onPress={() => openServices({ category: 'TECH' })}>
             <View style={styles.iconWrapper}>
               <Feather name="monitor" size={24} color="#7A8C9E" />
             </View>
@@ -72,7 +84,7 @@ export default function ClientDashboard() {
           </TouchableOpacity>
 
           {/* Tarjeta LUZ */}
-          <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('/service-details' as any)}>
+          <TouchableOpacity style={styles.categoryCard} onPress={() => openServices({ category: 'LUZ' })}>
             <View style={styles.iconWrapper}>
               <Feather name="zap" size={24} color="#7A8C9E" />
             </View>
@@ -80,7 +92,7 @@ export default function ClientDashboard() {
           </TouchableOpacity>
 
           {/* Tarjeta HOGAR */}
-          <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('/service-details' as any)}>
+          <TouchableOpacity style={styles.categoryCard} onPress={() => openServices({ category: 'HOGAR' })}>
             <View style={styles.iconWrapper}>
               <Feather name="home" size={24} color="#7A8C9E" />
             </View>
@@ -88,7 +100,7 @@ export default function ClientDashboard() {
           </TouchableOpacity>
 
           {/* Tarjeta OTROS */}
-          <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('/service-details' as any)}>
+          <TouchableOpacity style={styles.categoryCard} onPress={() => openServices({ category: 'OTROS' })}>
             <View style={styles.iconWrapper}>
               <Feather name="sliders" size={24} color="#7A8C9E" />
             </View>

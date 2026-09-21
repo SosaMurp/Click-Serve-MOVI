@@ -21,6 +21,10 @@ export default function ClientProfile() {
     await logout(); 
   };
 
+  const biometricStatus = user?.biometria_estado === 'verificada'
+    ? 'Verificado'
+    : 'Pendiente de verificación';
+
   const OptionItem = ({ icon, title, subtitle, onPress }: { icon: any, title: string, subtitle: string, onPress?: () => void }) => (
     <TouchableOpacity style={styles.optionItem} onPress={onPress}>
       <View style={styles.optionIconWrapper}>
@@ -88,6 +92,23 @@ export default function ClientProfile() {
         <View style={styles.optionsContainer}>
           <OptionItem icon="map-pin" title="MIS DIRECCIONES" subtitle="2 ubicaciones guardadas" onPress={() => router.push('/my-addresses' as any)} />
           <OptionItem icon="credit-card" title="MÉTODOS DE PAGO" subtitle="Visa •••• 4242" onPress={() => router.push('/payment-methods' as any)} />
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => router.push('/biometric-verification' as any)}
+            accessibilityRole="button"
+            accessibilityLabel="Verificación Facial / Biométrica"
+          >
+            <View style={styles.optionIconWrapper}>
+              <Feather name="shield" size={18} color="#0A192F" />
+            </View>
+            <View style={styles.optionTextContainer}>
+              <Text style={styles.optionTitle}>VERIFICACIÓN FACIAL / BIOMÉTRICA</Text>
+              <Text style={[styles.optionSubtitle, biometricStatus === 'Verificado' && styles.verifiedStatus]}>
+                {biometricStatus}
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={20} color="#D1D9E0" />
+          </TouchableOpacity>
           <OptionItem icon="help-circle" title="SOPORTE & AYUDA" subtitle="Centro de ayuda 24/7" onPress={() => router.push('/support' as any)} />
         </View>
 
@@ -139,6 +160,7 @@ const styles = StyleSheet.create({
   optionTextContainer: { flex: 1 },
   optionTitle: { fontSize: 12, fontWeight: '800', color: '#0A192F', letterSpacing: 0.5, marginBottom: 2 },
   optionSubtitle: { fontSize: 12, color: '#7A8C9E', fontStyle: 'italic', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  verifiedStatus: { color: '#2E9B62', fontStyle: 'normal', fontWeight: '700' },
   logoutButton: { borderWidth: 1, borderColor: '#FFF0F0', backgroundColor: '#FFFAFA', paddingVertical: 16, borderRadius: 4, alignItems: 'center', marginTop: 10 },
   logoutButtonText: { color: '#FF6B6B', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
   bottomNav: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: '#FFFFFF', height: 80, borderTopWidth: 1, borderTopColor: '#F0F4F8', position: 'absolute', bottom: 0, width: '100%', paddingBottom: Platform.OS === 'ios' ? 20 : 0 },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,40 @@ import {
   Platform,
   ImageBackground
 } from 'react-native';
+import { ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from './context/AuthContext';
+import { getTechnicianRequests, ServiceRequest, updateRequestStatus } from '../services/requestsApi';
 
 export default function TechDashboard() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('historial'); // 'nuevas', 'en_curso', 'historial'
+  const [technicianRequests, setTechnicianRequests] = useState<ServiceRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+
+  const loadTechnicianRequests = useCallback(async () => {
+    setRequestsLoading(true);
+    try {
+      setTechnicianRequests(await getTechnicianRequests());
+    } catch (error: any) {
+      Alert.alert('No se pudieron cargar solicitudes', error.response?.data?.error || 'Verifica tu conexión.');
+    } finally {
+      setRequestsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadTechnicianRequests(); }, [loadTechnicianRequests]);
+
+  const decideRequest = async (request: ServiceRequest, estado: 'ASIGNADA' | 'CANCELADA') => {
+    try {
+      await updateRequestStatus(request.id_solicitud, estado);
+      await loadTechnicianRequests();
+    } catch (error: any) {
+      Alert.alert('No se pudo actualizar', error.response?.data?.error || 'La solicitud pudo ser tomada por otro técnico.');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -181,6 +207,40 @@ export default function TechDashboard() {
     </ScrollView>
   );
 
+  const renderRequestQueue = () => (
+    <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionTitle}>SOLICITUDES DISPONIBLES</Text>
+        <TouchableOpacity onPress={loadTechnicianRequests}><Feather name="refresh-cw" size={16} color="#0A192F" /></TouchableOpacity>
+      </View>
+      {requestsLoading ? <ActivityIndicator size="large" color="#0A192F" /> : technicianRequests.length === 0 ? (
+        <Text style={styles.emptyRequests}>No hay solicitudes pendientes en este momento.</Text>
+      ) : technicianRequests.map(request => (
+        <View key={request.id_solicitud} style={styles.queueCard}>
+          <View style={styles.queueHeader}>
+            <View>
+              <Text style={styles.queueFolio}>{request.folio}</Text>
+              <Text style={styles.queueClient}>{request.cliente_nombre} {request.cliente_apellido}</Text>
+            </View>
+            <Text style={styles.queueStatus}>{request.estado}</Text>
+          </View>
+          <Text style={styles.queueCategory}>{request.categoria || 'SERVICIO GENERAL'}</Text>
+          <Text style={styles.queueDescription} numberOfLines={3}>{request.descripcion}</Text>
+          <Text style={styles.queueAddress}><Feather name="map-pin" size={12} color="#7A8C9E" /> {request.direccion}</Text>
+          <Text style={styles.queueSchedule}><Feather name="calendar" size={12} color="#7A8C9E" /> {request.fecha_preferida || 'Fecha abierta'} · {request.hora_preferida || 'Hora abierta'}</Text>
+          {request.estado === 'PENDIENTE' ? <View style={styles.queueActions}>
+            <TouchableOpacity style={styles.rejectButton} onPress={() => decideRequest(request, 'CANCELADA')}>
+              <Text style={styles.rejectText}>RECHAZAR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.acceptButton} onPress={() => decideRequest(request, 'ASIGNADA')}>
+              <Text style={styles.acceptText}>ACEPTAR</Text><Feather name="arrow-right" size={14} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View> : <Text style={styles.assignedText}>SOLICITUD ASIGNADA A TI</Text>}
+        </View>
+      ))}
+    </ScrollView>
+  );
+
   const renderNuevas = () => (
     <View style={styles.mapTabContainer}>
       <View style={styles.mapPlaceholder}>
@@ -301,7 +361,7 @@ export default function TechDashboard() {
       <View style={styles.contentArea}>
         {activeTab === 'historial' && renderHistorial()}
         {activeTab === 'en_curso' && renderEnCurso()}
-        {activeTab === 'nuevas' && renderNuevas()}
+        {activeTab === 'nuevas' && renderRequestQueue()}
       </View>
 
       {/* Bottom Nav */}
@@ -442,6 +502,22 @@ const styles = StyleSheet.create({
   hideButtonText: { fontSize: 9, fontWeight: '800', color: '#7A8C9E', letterSpacing: 1.5 },
   acceptNewButton: { flex: 1.5, flexDirection: 'row', backgroundColor: '#0A192F', paddingVertical: 16, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
   acceptNewButtonText: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1.5 },
+  emptyRequests: { color: '#7A8C9E', textAlign: 'center', paddingVertical: 45 },
+  queueCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E8EEF3', borderRadius: 8, padding: 18, marginBottom: 14 },
+  queueHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  queueFolio: { color: '#0A192F', fontSize: 15, fontWeight: '800' },
+  queueClient: { color: '#7A8C9E', fontSize: 11, marginTop: 4 },
+  queueStatus: { color: '#C2410C', backgroundColor: '#FFF7ED', fontSize: 9, fontWeight: '800', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 4 },
+  queueCategory: { color: '#0A192F', fontSize: 10, fontWeight: '800', letterSpacing: 1, marginBottom: 10 },
+  queueDescription: { color: '#506174', fontSize: 13, lineHeight: 20, marginBottom: 12 },
+  queueAddress: { color: '#7A8C9E', fontSize: 11, marginBottom: 7 },
+  queueSchedule: { color: '#7A8C9E', fontSize: 11, marginBottom: 16 },
+  queueActions: { flexDirection: 'row', gap: 10 },
+  rejectButton: { flex: 1, borderWidth: 1, borderColor: '#FECACA', paddingVertical: 13, borderRadius: 4, alignItems: 'center' },
+  rejectText: { color: '#DC2626', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  acceptButton: { flex: 1, flexDirection: 'row', gap: 7, backgroundColor: '#0A192F', paddingVertical: 13, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
+  acceptText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  assignedText: { color: '#2563EB', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
 
   // Navegación Inferior
   bottomNav: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: '#FFFFFF', height: 80, borderTopWidth: 1, borderTopColor: '#F0F4F8', position: 'absolute', bottom: 0, width: '100%', paddingBottom: Platform.OS === 'ios' ? 20 : 0, zIndex: 10 },

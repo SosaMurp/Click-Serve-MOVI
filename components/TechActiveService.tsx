@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,45 @@ import {
   ImageBackground
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { getTechnicianRequests, ServiceRequest, updateRequestStatus } from '../services/requestsApi';
 
 export default function TechActiveService() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const [service, setService] = useState<ServiceRequest | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+
+  const loadService = useCallback(async () => {
+    try {
+      const requests = await getTechnicianRequests();
+      const selected = id ? requests.find(item => String(item.id_solicitud) === id) : requests.find(item => ['ASIGNADA', 'EN_CAMINO', 'EN_PROCESO'].includes(item.estado));
+      setService(selected || null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => { loadService(); }, [loadService]);
+
+  const advanceService = async () => {
+    if (!service) return;
+    const nextStatus = service.estado === 'ASIGNADA' ? 'EN_CAMINO' : service.estado === 'EN_CAMINO' ? 'EN_PROCESO' : 'FINALIZADA';
+    setUpdating(true);
+    try {
+      const updated = await updateRequestStatus(service.id_solicitud, nextStatus);
+      setService(updated);
+      if (nextStatus === 'FINALIZADA') router.replace('/tech-dashboard' as any);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) return <View style={styles.center}><Text style={styles.loadingText}>Cargando servicio...</Text></View>;
+  if (!service) return <View style={styles.center}><Text style={styles.loadingText}>No hay un servicio activo asignado.</Text></View>;
+
+  const actionLabel = service.estado === 'ASIGNADA' ? 'VOY EN CAMINO' : service.estado === 'EN_CAMINO' ? 'INICIAR TRABAJO' : 'FINALIZAR TRABAJO';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -39,7 +74,7 @@ export default function TechActiveService() {
           <Text style={styles.headerTitle}>Servicio Actual</Text>
           <View style={styles.statusRow}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusText}>EN CAMINO</Text>
+            <Text style={styles.statusText}>{service.estado.replace('_', ' ')}</Text>
           </View>
         </View>
 
@@ -58,8 +93,8 @@ export default function TechActiveService() {
                 <Text style={styles.avatarText}>JP</Text>
               </View>
               <View>
-                <Text style={styles.clientName}>Juan Pérez</Text>
-                <Text style={styles.clientAddress}>COLONIA CENTRO • 66950</Text>
+                <Text style={styles.clientName}>{service.cliente_nombre || 'Cliente'} {service.cliente_apellido || ''}</Text>
+                <Text style={styles.clientAddress}>{service.direccion}</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.phoneButton}>
@@ -70,21 +105,22 @@ export default function TechActiveService() {
           <View style={styles.noteBox}>
             <Text style={styles.noteLabel}>NOTA DEL CLIENTE</Text>
             <Text style={styles.noteText}>
-              "Mi PC no enciende tras una descarga eléctrica. Necesito revisión de fuente de poder."
+              {service.descripcion}
             </Text>
           </View>
 
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.chatButton} onPress={() => router.push('/tech-client-chat' as any)}>
+            <TouchableOpacity style={styles.chatButton} onPress={() => router.push({ pathname: '/tech-client-chat', params: { id: String(service.id_solicitud) } } as any)}>
               <Feather name="message-circle" size={16} color="#0A192F" style={{ marginRight: 8 }} />
               <Text style={styles.chatButtonText}>CHAT</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
               style={styles.arriveButton}
-              onPress={() => router.push('/tech-active-work' as any)}
+              onPress={advanceService}
+              disabled={updating}
             >
-              <Text style={styles.arriveButtonText}>HE LLEGADO</Text>
+              <Text style={styles.arriveButtonText}>{updating ? 'ACTUALIZANDO...' : actionLabel}</Text>
             </TouchableOpacity>
           </View>
 
@@ -102,6 +138,8 @@ export default function TechActiveService() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAFAFA' },
+  center: { flex: 1, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  loadingText: { color: '#7A8C9E', fontSize: 15, textAlign: 'center' },
   
   mapContainer: { ...StyleSheet.absoluteFill, backgroundColor: '#E2E8F0' },
   mapBackground: { flex: 1, backgroundColor: '#E2E8F0', opacity: 0.5 },

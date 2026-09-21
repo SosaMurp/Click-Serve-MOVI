@@ -36,20 +36,13 @@ export default function LoginScreen() {
       const response = await api.post('/api/login', { email, password });
       const data = response.data;
 
-      setIsLoading(false);
-      
-      Alert.alert(
-        'Éxito', 
-        'Inicio de sesión correcto', 
-        [
-          { 
-            text: 'OK', 
-            onPress: () => {
-              login(data.usuario, data.token);
-            } 
-          }
-        ]
-      );
+      if (response.status !== 200 || !data?.usuario || !data?.token) {
+        throw new Error('El servidor no devolvió una sesión válida.');
+      }
+
+      await login(data.usuario, data.token);
+      const destination = data.usuario.id_rol === 2 ? '/tech-dashboard' : '/client-dashboard';
+      router.replace(destination as any);
 
     } catch (error: any) {
       setIsLoading(false);

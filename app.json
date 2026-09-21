@@ -7,7 +7,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      ["expo-camera", { "cameraPermission": "Permitir que Click & Serve use la cámara para verificar tu identidad." }],
+      ["expo-image-picker", { "photosPermission": "Permitir que Click & Serve adjunte fotos del problema al solicitar un servicio." }]
+    ],
     "ios": {
       "supportsTablet": true
     },

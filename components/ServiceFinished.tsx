@@ -11,11 +11,32 @@ import {
   KeyboardAvoidingView
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Alert } from 'react-native';
+import { rateRequest } from '../services/requestsApi';
 
 export default function ServiceFinished() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const submitRating = async () => {
+    if (!id || !rating) {
+      Alert.alert('Calificación requerida', 'Selecciona de 1 a 5 estrellas.');
+      return;
+    }
+    setSaving(true);
+    try {
+      await rateRequest(Number(id), rating, comment);
+      router.replace('/my-requests' as any);
+    } catch (error: any) {
+      Alert.alert('No se pudo guardar', error.response?.data?.error || 'Intenta nuevamente.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -79,6 +100,8 @@ export default function ServiceFinished() {
 
             <TextInput 
               style={styles.textArea} 
+              value={comment}
+              onChangeText={setComment}
               placeholder="Escribe un comentario opcional..."
               placeholderTextColor="#9CA8B6"
               multiline
@@ -93,9 +116,10 @@ export default function ServiceFinished() {
         <View style={styles.footer}>
           <TouchableOpacity 
             style={styles.finishButton}
-            onPress={() => router.replace('/client-dashboard')}
+            onPress={submitRating}
+            disabled={saving}
           >
-            <Text style={styles.finishButtonText}>ENVIAR Y FINALIZAR</Text>
+            <Text style={styles.finishButtonText}>{saving ? 'GUARDANDO...' : 'ENVIAR Y FINALIZAR'}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

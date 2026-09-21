@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 
 export const BASE_URL = 
   process.env.EXPO_PUBLIC_API_URL || 
-  (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  (Platform.OS === 'web' && typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:3000'
     : 'http://192.168.8.203:3000');
 
@@ -19,17 +19,19 @@ type RequestOptions = {
 // Cliente API ultraligero usando fetch nativo en lugar de axios
 async function customFetch(endpoint: string, method: string = 'GET', options: RequestOptions = {}) {
   const token = await AsyncStorage.getItem('@user_token');
+  const isMultipart = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
+  if (isMultipart) delete headers['Content-Type'];
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method,
       headers,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      body: options.body ? (isMultipart ? options.body : JSON.stringify(options.body)) : undefined,
     });
 
     const contentType = response.headers.get('content-type');
@@ -68,6 +70,7 @@ export const api = {
   get: (endpoint: string, options?: RequestOptions) => customFetch(endpoint, 'GET', options),
   post: (endpoint: string, body?: any, options?: RequestOptions) => customFetch(endpoint, 'POST', { ...options, body }),
   put: (endpoint: string, body?: any, options?: RequestOptions) => customFetch(endpoint, 'PUT', { ...options, body }),
+  patch: (endpoint: string, body?: any, options?: RequestOptions) => customFetch(endpoint, 'PATCH', { ...options, body }),
   delete: (endpoint: string, options?: RequestOptions) => customFetch(endpoint, 'DELETE', options),
   defaults: {
     headers: {
@@ -78,6 +81,7 @@ export const api = {
 
 type AuthContextType = {
   user: any;
+  token: string | null;
   isLoading: boolean;
   login: (userData: any, token?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -85,6 +89,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  token: null,
   isLoading: true,
   login: async () => { },
   logout: async () => { },
@@ -94,6 +99,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -109,6 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (storedToken) {
+          setToken(storedToken);
           api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         }
       } catch (error) {
@@ -126,16 +133,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
       if (token) {
         await AsyncStorage.setItem('@user_token', token);
+        setToken(token);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
       setUser(userData);
 
       // Redireccionar basado en el rol
-      if (userData.id_rol === 1) {
-        router.replace('/client-dashboard' as any);
-      } else if (userData.id_rol === 2) {
-        router.replace('/tech-dashboard' as any);
-      }
+      const destination = userData.id_rol === 2 ? '/tech-dashboard' : '/client-dashboard';
+      await router.replace(destination as any);
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
     }
@@ -155,6 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await AsyncStorage.removeItem('@user_token');
       delete api.defaults.headers.common['Authorization'];
       setUser(null);
+      setToken(null);
       // Forzar al login
       router.replace('/' as any);
     } catch (error) {
@@ -163,7 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
