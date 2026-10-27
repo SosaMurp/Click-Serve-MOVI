@@ -1,0 +1,56 @@
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { color, Icon, Money, space, Surface, Text } from '../../design';
+import type { Solicitud } from '../../api/types';
+import { formatDistance, formatShortDate, formatTime12 } from '../../lib/format';
+import { StatusPlate } from './StatusPlate';
+
+// Fila de orden: la placa de estado vive siempre arriba a la derecha (celda fija) y va junto a su prueba.
+export function OrderCard({ s, rol, onPress, footer }: { s: Solicitud; rol: 'cliente' | 'tecnico'; onPress?: () => void; footer?: React.ReactNode }) {
+  const who = rol === 'cliente'
+    ? (s.tecnico ? `${s.tecnico.nombre} ${s.tecnico.apellido}` : null)
+    : `${s.cliente_nombre || 'Cliente'} ${s.cliente_apellido || ''}`.trim();
+  const when = s.fecha_preferida ? `${formatShortDate(s.fecha_preferida)}${s.hora_preferida ? ` · ${formatTime12(s.hora_preferida)}` : ''}` : 'Fecha abierta';
+  return (
+    <Surface onPress={onPress} accessibilityLabel={`${s.categoria_nombre}, folio ${s.folio}`} style={styles.card}>
+      <View style={styles.top}>
+        <View style={styles.flex}>
+          <Text variant="caption" tone="muted" tabular>{s.folio}</Text>
+          <Text variant="title" numberOfLines={1}>{s.categoria_nombre}</Text>
+        </View>
+        <StatusPlate estado={s.estado} rol={rol} />
+      </View>
+      <Text variant="bodySm" tone="soft" numberOfLines={2} style={styles.desc}>{s.descripcion}</Text>
+      <View style={styles.meta}>
+        <View style={styles.metaItem}>
+          <Icon name="calendar-blank-outline" size={16} color={color.inkMuted} />
+          <Text variant="caption" tone="muted">{when}</Text>
+        </View>
+        {who ? (
+          <View style={styles.metaItem}>
+            <Icon name={rol === 'cliente' ? 'account-hard-hat-outline' : 'account-outline'} size={16} color={color.inkMuted} />
+            <Text variant="caption" tone="muted" numberOfLines={1}>{who}</Text>
+          </View>
+        ) : null}
+        {s.distancia_km != null ? (
+          <View style={styles.metaItem}>
+            <Icon name="map-marker-distance" size={16} color={color.inkMuted} />
+            <Text variant="caption" tone="muted">{formatDistance(s.distancia_km)}</Text>
+          </View>
+        ) : null}
+        {s.monto_total ? <View style={styles.amount}><Money value={s.monto_total} size="sm" /></View> : null}
+      </View>
+      {footer}
+    </Surface>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { marginBottom: space.md },
+  flex: { flex: 1 },
+  top: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  desc: { marginTop: space.xs },
+  meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.md, marginTop: space.md },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '60%' },
+  amount: { marginLeft: 'auto' },
+});
