@@ -162,12 +162,20 @@ export default function Orden() {
           <Surface style={styles.gap}>
             <Text variant="title">Reporte {s.incidencia.folio}</Text>
             <Text variant="bodySm" tone="soft">{INCIDENCIA_TIPOS.find((x) => x.value === s.incidencia?.tipo)?.label}: {s.incidencia.descripcion}</Text>
-            <Text variant="label" style={styles.mt}>¿Cómo quieres seguir?</Text>
-            <View style={styles.stack}>
-              <Button title="Pedir otro técnico" icon="refresh-cw" variant="filled" onPress={() => resolve('REASIGNAR')} loading={busy === 'REASIGNAR'} disabled={!!busy} full />
-              <Button title="Continuar con este técnico" variant="outlined" onPress={() => resolve('CONTINUAR')} loading={busy === 'CONTINUAR'} disabled={!!busy} full />
-              <Button title="Cancelar sin cargo" variant="text" onPress={() => resolve('CANCELAR')} loading={busy === 'CANCELAR'} disabled={!!busy} full />
-            </View>
+            {!s.incidencia.propia && s.incidencia.tipo === 'SEGURIDAD' ? (
+              <Text variant="bodySm" style={styles.mt}>El equipo de seguridad de Click & Serve está revisando este reporte y te contactará.</Text>
+            ) : (
+              <>
+                <Text variant="label" style={styles.mt}>¿Cómo quieres seguir?</Text>
+                <View style={styles.stack}>
+                  <Button title="Pedir otro técnico" icon="refresh-cw" variant="filled" onPress={() => resolve('REASIGNAR')} loading={busy === 'REASIGNAR'} disabled={!!busy} full />
+                  {s.incidencia.propia ? (
+                    <Button title="Continuar con este técnico" variant="outlined" onPress={() => resolve('CONTINUAR')} loading={busy === 'CONTINUAR'} disabled={!!busy} full />
+                  ) : null}
+                  <Button title="Cancelar sin cargo" variant="text" onPress={() => resolve('CANCELAR')} loading={busy === 'CANCELAR'} disabled={!!busy} full />
+                </View>
+              </>
+            )}
           </Surface>
         ) : null}
 

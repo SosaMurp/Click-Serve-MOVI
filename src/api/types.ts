@@ -57,7 +57,7 @@ export type Cotizacion = {
 export type Tarea = { id_tarea: number; descripcion: string; origen: 'PLANTILLA' | 'TECNICO'; norma: string | null; completada: boolean };
 export type Evidencia = { id_evidencia: number; tipo_evidencia: string; descripcion: string | null; url: string; fecha_subida: string };
 export type Reprogramacion = { id_reprogramacion: number; propuesta_por: number; propuesta_por_mi: boolean; fecha: string; hora: string; motivo: string | null; estado: string };
-export type Incidencia = { id_incidencia: number; folio: string; tipo: string; descripcion: string; prioridad: string; estado: string; fecha_creacion: string; resolucion?: string | null; folio_solicitud?: string };
+export type Incidencia = { id_incidencia: number; folio: string; tipo: string; descripcion: string; prioridad: string; estado: string; fecha_creacion: string; resolucion?: string | null; folio_solicitud?: string; propia?: boolean };
 
 export type Solicitud = {
   id_solicitud: number;
