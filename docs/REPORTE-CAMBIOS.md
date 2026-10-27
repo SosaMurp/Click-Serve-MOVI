@@ -13,7 +13,7 @@ Fecha: 27 de octubre de 2026 · App: `Click-Serve-MOVI`, rama `claude/project-th
 
 | | App | Backend |
 |---|---|---|
-| Commits de la rama | 21 (con este reporte) | 23 (parches `0001`–`0023`) |
+| Commits de la rama | 23 (incluye el reporte) | 23 (parches `0001`–`0023`) |
 | Diff contra `main` | 256 archivos, +11,949 / −15,391 (se borró la app anterior) | 55 archivos, +6,326 / −2,440 (sin `node_modules`) |
 | Pruebas | 18 (`npm test`) + `tsc --noEmit` | 108 (`npm test`, base `clickyserve_test`) |
 
