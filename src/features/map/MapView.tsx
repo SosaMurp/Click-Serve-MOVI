@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { WebView as RNWebView } from 'react-native-webview';
 
@@ -7,6 +7,7 @@ const WebView = RNWebView as unknown as React.ComponentType<Record<string, unkno
 import { IconButton } from '../../design/Button';
 import { color, radius, elevation } from '../../design/tokens';
 import { leafletHtml, MapEvent, MapMarker, MapPayload } from './leafletHtml';
+import { useMapSync } from './useMapSync';
 
 export type MapViewProps = {
   center: { lat: number; lng: number };
@@ -35,9 +36,7 @@ export function MapView({ center, zoom, markers = [], pickable, fit, height = 24
   const html = useMemo(() => leafletHtml({ id, center, zoom, markers, pickable, fit }), [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const apply = (p: MapPayload) => ref.current?.injectJavaScript(`window.__csApply && window.__csApply(${JSON.stringify(p)}); true;`);
-
-  useEffect(() => { apply({ type: 'markers', markers, fit }); }, [JSON.stringify(markers)]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (focusTo) apply({ type: 'center', lat: focusTo.lat, lng: focusTo.lng, zoom: 15 }); }, [focusTo?.lat, focusTo?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  const onReady = useMapSync(apply, { center, zoom, markers, fit, focusTo });
 
   return (
     <View style={[styles.wrap, { height }, style]}>
@@ -50,6 +49,7 @@ export function MapView({ center, zoom, markers = [], pickable, fit, height = 24
         onMessage={(e: { nativeEvent: { data: string } }) => {
           try {
             const msg = JSON.parse(e.nativeEvent.data) as MapEvent;
+            if (msg.type === 'ready') onReady();
             if (msg.type === 'marker') onMarkerPress?.(msg.id);
             if (msg.type === 'pick') onPick?.(msg.lat, msg.lng);
           } catch { /* mensaje ajeno */ }
