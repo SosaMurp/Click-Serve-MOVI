@@ -7,7 +7,7 @@ import {
 import { errorMessage } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
 import type { Solicitud } from '@/src/api/types';
-import { STEPS, stepIndex, estadoInfo } from '@/src/lib/estado';
+import { STEPS, stepIndex, estadoInfo, isActive } from '@/src/lib/estado';
 import { formatDate, formatShortDate, formatTime12, parseMoneyInput } from '@/src/lib/format';
 import { hapticSuccess } from '@/src/lib/media';
 import { useOperationKey } from '@/src/lib/useOperationKey';
@@ -64,7 +64,7 @@ export default function Trabajo() {
   }
 
   const info = estadoInfo(s.estado, 'tecnico');
-  const active = !['FINALIZADA', 'CANCELADA'].includes(s.estado);
+  const active = isActive(s.estado);
   const home = s.latitud != null && s.longitud != null ? { lat: Number(s.latitud), lng: Number(s.longitud) } : null;
   const cliente = `${s.cliente_nombre || 'Cliente'} ${s.cliente_apellido || ''}`.trim();
   const tareas = s.tareas || [];

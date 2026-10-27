@@ -10,6 +10,7 @@ import { useRealtime } from '@/src/state/realtime';
 import { useSession } from '@/src/state/session';
 import { ChatThread } from '@/src/features/chat/ChatThread';
 import { useSolicitud } from '@/src/features/orders/hooks';
+import { isActive } from '@/src/lib/estado';
 import { dialog } from '@/src/ui/dialog';
 import { toast } from '@/src/ui/toast';
 
@@ -31,7 +32,7 @@ export default function Chat() {
 
   const otro = s ? (soyCliente ? (s.tecnico ? `${s.tecnico.nombre} ${s.tecnico.apellido}` : 'Técnico') : `${s.cliente_nombre || 'Cliente'} ${s.cliente_apellido || ''}`.trim()) : 'Chat';
   const telefono = soyCliente ? s?.tecnico?.telefono : s?.cliente_telefono;
-  const cerrado = !!s && ['FINALIZADA', 'CANCELADA'].includes(s.estado);
+  const cerrado = !!s && !isActive(s.estado);
 
   async function send(text: string, file: Parameters<typeof solicitudesApi.enviarMensaje>[2]) {
     try {

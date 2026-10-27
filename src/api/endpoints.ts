@@ -88,7 +88,6 @@ export const solicitudesApi = {
   escalar: (id: number | string, motivo: string) => api.post<{ mensaje: string; ticket: Ticket; incidencia: Incidencia }>(`/api/solicitudes/${id}/escalar`, { motivo }),
   reportar: (id: number | string, tipo: string, descripcion: string) => api.post<{ incidencia: Incidencia; solicitud: Solicitud; mensaje: string }>(`/api/solicitudes/${id}/incidencias`, { tipo, descripcion }),
   resolverIncidencia: (idIncidencia: number, accion: 'REASIGNAR' | 'CANCELAR' | 'CONTINUAR') => api.post<{ solicitud: Solicitud; mensaje: string }>(`/api/incidencias/${idIncidencia}/resolver`, { accion }),
-  incidencias: () => api.get<{ incidencias: Incidencia[] }>('/api/incidencias'),
   proponerHorario: (id: number | string, fecha: string, hora: string, motivo?: string) => api.post<{ reprogramacion: Reprogramacion; mensaje: string }>(`/api/solicitudes/${id}/reprogramaciones`, { fecha, hora, motivo }),
   responderHorario: (idReprog: number, respuesta: 'ACEPTAR' | 'RECHAZAR' | 'CANCELAR', contrapropuesta?: { fecha: string; hora: string; motivo?: string }) =>
     api.patch<{ solicitud: Solicitud; mensaje: string }>(`/api/reprogramaciones/${idReprog}`, { respuesta, contrapropuesta }),

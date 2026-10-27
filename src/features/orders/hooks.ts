@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { solicitudesApi } from '../../api/endpoints';
 import type { Categoria, Solicitud } from '../../api/types';
 import { useLoader } from '../../lib/useLoader';
+import { isActive } from '../../lib/estado';
 import { useRealtime } from '../../state/realtime';
 
 // Una orden con recarga en tiempo real cuando cambia su estado, llega un mensaje o se mueve el técnico.
@@ -47,7 +48,7 @@ export function useCategorias() {
 }
 
 export function activeOrders(list: Solicitud[] | null | undefined): Solicitud[] {
-  return (list || []).filter((s) => !['FINALIZADA', 'CANCELADA'].includes(s.estado));
+  return (list || []).filter((s) => isActive(s.estado));
 }
 
 export function needsClientAction(s: Solicitud): boolean {

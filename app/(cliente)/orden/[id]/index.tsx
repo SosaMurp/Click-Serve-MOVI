@@ -7,7 +7,7 @@ import {
 import { errorMessage } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
 import type { Solicitud } from '@/src/api/types';
-import { estadoInfo, INCIDENCIA_TIPOS, STEPS, stepIndex } from '@/src/lib/estado';
+import { estadoInfo, INCIDENCIA_TIPOS, isActive, STEPS, stepIndex } from '@/src/lib/estado';
 import { formatDate, formatDateTime, formatShortDate, formatTime12 } from '@/src/lib/format';
 import { hapticSuccess } from '@/src/lib/media';
 import { MapView } from '@/src/features/map/MapView';
@@ -58,7 +58,7 @@ export default function Orden() {
 
   const info = estadoInfo(s.estado, 'cliente');
   const t = s.tecnico;
-  const active = !['FINALIZADA', 'CANCELADA'].includes(s.estado);
+  const active = isActive(s.estado);
   const showMap = ['ASIGNADA', 'EN_CAMINO'].includes(s.estado) && s.latitud && s.longitud;
   const home = s.latitud && s.longitud ? { lat: Number(s.latitud), lng: Number(s.longitud) } : null;
   const techPos = s.tecnico_ubicacion ? { lat: s.tecnico_ubicacion.latitud, lng: s.tecnico_ubicacion.longitud } : null;
