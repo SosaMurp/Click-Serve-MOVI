@@ -35,7 +35,7 @@ export function OrderHero({ s, rol = 'cliente' }: { s: Solicitud; rol?: 'cliente
         </View>
         <View>
           <Text variant="caption" tone="onColor" style={styles.dim}>Total</Text>
-          <Text variant="number" tone="onColor" tabular>{s.monto_total ? formatMoney(s.monto_total) : '—'}</Text>
+          <Text variant="number" tone="onColor" tabular>{s.monto_total || s.monto_cotizacion ? formatMoney(s.monto_total || s.monto_cotizacion) : '—'}</Text>
         </View>
       </View>
       <View style={styles.row} accessibilityRole="progressbar" accessibilityLabel={`Avance: ${info.label}`}>

@@ -8,7 +8,7 @@ import type { MapViewProps } from './MapView';
 let seq = 0;
 
 // Versión web: el mismo mapa Leaflet en un iframe srcdoc (mismo origen), con mensajes filtrados por id.
-export function MapView({ center, zoom, markers = [], pickable, fit, height = 240, style, onMarkerPress, onPick, recenterTo }: MapViewProps) {
+export function MapView({ center, zoom, markers = [], pickable, fit, height = 240, style, onMarkerPress, onPick, recenterTo, focusTo, controlsBottom = 8 }: MapViewProps) {
   const frame = useRef<HTMLIFrameElement | null>(null);
   const id = useMemo(() => `map${(seq += 1)}`, []);
   const html = useMemo(() => leafletHtml({ id, center, zoom, markers, pickable, fit }), [id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -33,6 +33,7 @@ export function MapView({ center, zoom, markers = [], pickable, fit, height = 24
   }, [id]);
 
   useEffect(() => { apply({ type: 'markers', markers, fit }); }, [JSON.stringify(markers)]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (focusTo) apply({ type: 'center', lat: focusTo.lat, lng: focusTo.lng, zoom: 15 }); }, [focusTo?.lat, focusTo?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={[styles.wrap, { height }, style]}>
@@ -43,7 +44,7 @@ export function MapView({ center, zoom, markers = [], pickable, fit, height = 24
         style: { border: 0, width: '100%', height: '100%', display: 'block' },
       })}
       {recenterTo ? (
-        <View style={styles.recenter}>
+        <View style={[styles.recenter, { bottom: controlsBottom }]}>
           <IconButton icon="crosshair" label="Centrar en mi ubicación" background={color.surface} tint={color.brandInk} onPress={() => apply({ type: 'center', lat: recenterTo.lat, lng: recenterTo.lng, zoom: 16 })} />
         </View>
       ) : null}

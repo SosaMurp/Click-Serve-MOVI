@@ -54,6 +54,10 @@ const TIPO: Record<string, { label: string; tone: 'brand' | 'accent' | 'success'
   ANTES: { label: 'Antes', tone: 'accent' },
   DURANTE: { label: 'Durante', tone: 'brand' },
   DESPUES: { label: 'Después', tone: 'success' },
+  // Valores que guarda el backend.
+  PRE_TRABAJO: { label: 'Antes', tone: 'accent' },
+  EN_PROCESO: { label: 'Durante', tone: 'brand' },
+  POST_TRABAJO: { label: 'Después', tone: 'success' },
 };
 
 // Evidencias como feed: foto grande, etiqueta de etapa y hora (RF-65/69).

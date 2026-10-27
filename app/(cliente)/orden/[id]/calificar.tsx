@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Avatar, Button, Chip, RatingStars, Screen, space, Surface, Text, TextField } from '@/src/design';
 import { errorMessage, fileUrl } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
@@ -29,7 +30,7 @@ export default function Calificar() {
       const r = await solicitudesApi.calificar(id, estrellas, texto);
       hapticSuccess();
       toast.success(r.mensaje || '¡Gracias por tu calificación!');
-      router.back();
+      goBack(router);
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {

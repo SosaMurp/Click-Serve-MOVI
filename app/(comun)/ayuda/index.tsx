@@ -37,7 +37,7 @@ export default function Ayuda() {
               onPress={() => setTopic(on ? null : t.key)}
               style={[styles.topic, { backgroundColor: on ? color.accent : t.tint === 'sky' ? color.brandSoft : t.tint === 'peach' ? color.accentSoft : color.surface }]}
             >
-              <View style={styles.topicIcon}><Icon name={t.icon as IconName} size={18} color={color.brandInk} /></View>
+              <View style={[styles.topicIcon, t.tint === 'plain' && !on ? { backgroundColor: color.brandSoft } : null]}><Icon name={t.icon as IconName} size={18} color={color.brandInk} /></View>
               <Text variant="subtitle" numberOfLines={2}>{t.label}</Text>
             </Pressable>
           );

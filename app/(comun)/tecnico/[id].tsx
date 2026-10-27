@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import {
   AppBar, Avatar, Banner, Button, color, Divider, EmptyState, ListItem, MetricBox, Pill, radius, RatingStars, Screen, SectionHeader, Skeleton, space, Surface, Text,
 } from '@/src/design';
@@ -29,7 +30,7 @@ export default function PerfilTecnico() {
       const r = await solicitudesApi.proponer(solicitud, t.id_usuario);
       hapticSuccess();
       toast.success(r.mensaje);
-      router.back();
+      goBack(router);
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
@@ -84,7 +85,7 @@ export default function PerfilTecnico() {
           <SectionHeader title="Especialidades" />
           <View style={styles.chips}>
             {t.especialidades.length
-              ? t.especialidades.map((e) => <Pill key={e.codigo} label={e.nombre} tone={e.estado === 'VERIFICADA' ? 'brand' : 'neutral'} icon={e.estado === 'VERIFICADA' ? 'check' : undefined} />)
+              ? t.especialidades.map((e) => <Pill key={e.codigo} label={e.nombre} tone={['VERIFICADA', 'APROBADA'].includes(e.estado) ? 'brand' : 'neutral'} icon={['VERIFICADA', 'APROBADA'].includes(e.estado) ? 'check' : undefined} />)
               : <Text variant="body" tone="muted">Atiende servicios generales.</Text>}
           </View>
 

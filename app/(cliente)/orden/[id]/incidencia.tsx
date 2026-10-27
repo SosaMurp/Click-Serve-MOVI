@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Banner, Button, color, Icon, IconName, radius, Screen, space, Text, TextField } from '@/src/design';
 import { errorMessage } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
@@ -27,7 +28,7 @@ export default function Incidencia() {
       const r = await solicitudesApi.reportar(id, tipo, descripcion.trim());
       hapticWarning();
       toast.success(`${r.mensaje} Folio ${r.incidencia.folio}.`);
-      router.back();
+      goBack(router);
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {

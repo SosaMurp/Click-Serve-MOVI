@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Avatar, Button, color, Icon, Screen, Sheet, space, Surface, Text, TextField } from '@/src/design';
 import { ApiError, errorMessage, fileUrl } from '@/src/api/client';
 import { cuentaApi } from '@/src/api/endpoints';
@@ -58,7 +59,7 @@ export default function DatosPersonales() {
       setUser(usuario);
       hapticSuccess();
       toast.success('Datos guardados.');
-      router.back();
+      goBack(router);
     } catch (err) {
       if (err instanceof ApiError && err.field) setErrors({ [err.field]: err.message });
       toast.error(errorMessage(err));

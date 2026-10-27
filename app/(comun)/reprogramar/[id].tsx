@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Banner, Button, Calendar, Chip, Screen, space, Surface, Text, TextField, TimeField } from '@/src/design';
 import { errorMessage } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
@@ -33,7 +34,7 @@ export default function Reprogramar() {
       const r = await solicitudesApi.proponerHorario(id, fecha, hora, motivo.trim() || undefined);
       hapticSuccess();
       toast.success(r.mensaje);
-      router.back();
+      goBack(router);
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {

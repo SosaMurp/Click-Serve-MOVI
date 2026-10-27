@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Button, Chip, radius, Screen, space, SwitchRow, Text, TextField } from '@/src/design';
 import { ApiError, errorMessage } from '@/src/api/client';
 import { direccionesApi } from '@/src/api/endpoints';
@@ -60,7 +61,7 @@ export default function DireccionForm() {
       if (id) await direccionesApi.editar(Number(id), payload);
       else await direccionesApi.crear(payload);
       toast.success('Dirección guardada.');
-      router.back();
+      goBack(router);
     } catch (err) {
       if (err instanceof ApiError && err.field) setErrors({ [err.field]: err.message });
       toast.error(errorMessage(err));

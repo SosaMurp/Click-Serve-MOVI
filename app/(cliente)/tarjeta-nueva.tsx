@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Banner, Button, color, radius, Screen, space, Text, TextField } from '@/src/design';
 import { errorMessage } from '@/src/api/client';
 import { pagosApi } from '@/src/api/endpoints';
@@ -43,7 +44,7 @@ export default function TarjetaNueva() {
       await pagosApi.guardarTarjeta({ token: tk.token, marca: tk.marca, ultimos_4: tk.ultimos_4, expiracion: expiry, titular: name.trim() });
       setCvc('');
       toast.success(`Tarjeta •••• ${tk.ultimos_4} guardada.`);
-      router.back();
+      goBack(router);
     } catch (err) {
       toast.error(errorMessage(err));
     } finally {

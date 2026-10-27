@@ -62,7 +62,7 @@ export default function Comprobante() {
         {rows.map((r) => (
           <View key={r.label} style={styles.row}>
             <Text variant={r.strong ? 'subtitle' : 'bodySm'} tone={r.strong ? 'default' : 'soft'} style={styles.flex}>{r.label}</Text>
-            <Text variant={r.strong ? 'title' : 'body'} tabular>{r.value}</Text>
+            <Text variant={r.strong ? 'title' : 'body'} tabular style={styles.value}>{r.value}</Text>
           </View>
         ))}
         {s.pago.modo === 'SIMULADO' ? <Text variant="caption" tone="muted" style={styles.gap}>Pago de prueba (entorno de desarrollo).</Text> : null}
@@ -85,4 +85,5 @@ const styles = StyleSheet.create({
   dim: { opacity: 0.9 },
   okIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center', marginBottom: space.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
+  value: { maxWidth: '58%', textAlign: 'right' },
 });

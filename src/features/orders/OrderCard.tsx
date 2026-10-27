@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { color, Icon, Money, space, Surface, Text } from '../../design';
 import type { Solicitud } from '../../api/types';
 import { formatDistance, formatShortDate, formatTime12 } from '../../lib/format';
@@ -12,7 +12,8 @@ export function OrderCard({ s, rol, onPress, footer }: { s: Solicitud; rol: 'cli
     : `${s.cliente_nombre || 'Cliente'} ${s.cliente_apellido || ''}`.trim();
   const when = s.fecha_preferida ? `${formatShortDate(s.fecha_preferida)}${s.hora_preferida ? ` · ${formatTime12(s.hora_preferida)}` : ''}` : 'Fecha abierta';
   return (
-    <Surface onPress={onPress} accessibilityLabel={`${s.categoria_nombre}, folio ${s.folio}`} style={styles.card}>
+    <Surface onPress={footer ? undefined : onPress} accessibilityLabel={`${s.categoria_nombre}, folio ${s.folio}`} style={styles.card}>
+      <Pressable disabled={!footer || !onPress} onPress={onPress} accessibilityRole={footer && onPress ? 'button' : undefined} accessibilityLabel={footer ? `Ver ${s.categoria_nombre}, folio ${s.folio}` : undefined}>
       <View style={styles.top}>
         <View style={styles.flex}>
           <Text variant="caption" tone="muted" tabular>{s.folio}</Text>
@@ -40,6 +41,7 @@ export function OrderCard({ s, rol, onPress, footer }: { s: Solicitud; rol: 'cli
         ) : null}
         {s.monto_total ? <View style={styles.amount}><Money value={s.monto_total} size="sm" /></View> : null}
       </View>
+      </Pressable>
       {footer}
     </Surface>
   );

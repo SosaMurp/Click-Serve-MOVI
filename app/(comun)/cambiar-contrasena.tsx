@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { goBack } from '@/src/lib/nav';
 import { AppBar, Banner, Button, Screen, space, TextField } from '@/src/design';
 import { ApiError, errorMessage } from '@/src/api/client';
 import { cuentaApi } from '@/src/api/endpoints';
@@ -34,7 +35,7 @@ export default function CambiarContrasena() {
       if (r.token) await replaceToken(r.token);
       hapticSuccess();
       toast.success(r.mensaje || 'Contraseña actualizada.');
-      router.back();
+      goBack(router);
     } catch (err) {
       if (err instanceof ApiError && (err.code === 'PASSWORD_INCORRECT')) setErrors({ actual: err.message });
       else if (err instanceof ApiError && err.code === 'WEAK_PASSWORD') setErrors({ nueva: err.message });
