@@ -23,6 +23,8 @@ export default function DatosPersonales() {
   const [uploading, setUploading] = useState(false);
   const [photoSheet, setPhotoSheet] = useState(false);
   if (!user) return null;
+  // Con la identidad verificada el nombre queda ligado al INE (el servidor rechaza cambiarlo).
+  const nameLocked = user.identidad_verificada;
 
   const dirty = f.nombre !== user.nombre || f.apellido !== user.apellido || f.telefono !== (user.telefono || '') || f.bio !== (user.bio || '');
   const set = (k: Field) => (v: string) => {
@@ -55,7 +57,7 @@ export default function DatosPersonales() {
     if (Object.keys(e).length) return;
     setSaving(true);
     try {
-      const { usuario } = await cuentaApi.updateProfile({ nombre: f.nombre.trim(), apellido: f.apellido.trim(), telefono: f.telefono || undefined, bio: user!.rol === 'tecnico' ? f.bio.trim() : undefined });
+      const { usuario } = await cuentaApi.updateProfile({ ...(nameLocked ? {} : { nombre: f.nombre.trim(), apellido: f.apellido.trim() }), telefono: f.telefono || undefined, bio: user!.rol === 'tecnico' ? f.bio.trim() : undefined });
       setUser(usuario);
       hapticSuccess();
       toast.success('Datos guardados.');
@@ -81,15 +83,25 @@ export default function DatosPersonales() {
         <Button title={uploading ? 'Subiendo…' : 'Cambiar foto'} variant="text" onPress={() => setPhotoSheet(true)} disabled={uploading} />
       </View>
 
-      <TextField label="Nombre" value={f.nombre} onChangeText={set('nombre')} error={errors.nombre} maxLength={60} autoComplete="given-name" />
-      <TextField label="Apellido" value={f.apellido} onChangeText={set('apellido')} error={errors.apellido} maxLength={60} autoComplete="family-name" />
+      {nameLocked ? null : (
+        <>
+          <TextField label="Nombre" value={f.nombre} onChangeText={set('nombre')} error={errors.nombre} maxLength={60} autoComplete="given-name" />
+          <TextField label="Apellido" value={f.apellido} onChangeText={set('apellido')} error={errors.apellido} maxLength={60} autoComplete="family-name" />
+        </>
+      )}
       <TextField label="Teléfono" value={f.telefono} onChangeText={set('telefono')} error={errors.telefono} keyboardType="phone-pad" icon="phone" maxLength={10} autoComplete="tel" helper="Lo ve tu técnico o cliente solo durante un servicio activo." />
       {user.rol === 'tecnico' ? (
         <TextField label="Sobre mí" value={f.bio} onChangeText={set('bio')} multiline maxLength={500} counter placeholder="Experiencia, especialidades y forma de trabajo" />
       ) : null}
 
       <Surface tint="sunk" style={styles.readonly}>
-        <Text variant="caption" tone="muted">Correo</Text>
+        {nameLocked ? (
+          <>
+            <Text variant="caption" tone="muted">Nombre</Text>
+            <Text variant="body">{user.nombre} {user.apellido}</Text>
+          </>
+        ) : null}
+        <Text variant="caption" tone="muted" style={nameLocked ? styles.mt : undefined}>Correo</Text>
         <Text variant="body">{user.correo}</Text>
         {user.fecha_nacimiento ? (
           <>
@@ -97,7 +109,7 @@ export default function DatosPersonales() {
             <Text variant="body">{formatDate(user.fecha_nacimiento)}</Text>
           </>
         ) : null}
-        <Text variant="caption" tone="muted" style={styles.mt}>Para cambiar tu correo o fecha de nacimiento escribe a soporte: forman parte de tu identidad verificada.</Text>
+        <Text variant="caption" tone="muted" style={styles.mt}>{nameLocked ? 'Para corregir tu nombre, correo o fecha de nacimiento escribe a soporte: forman parte de tu identidad verificada.' : 'Para cambiar tu correo o fecha de nacimiento escribe a soporte.'}</Text>
       </Surface>
 
       <Sheet visible={photoSheet} onClose={() => setPhotoSheet(false)} title="Foto de perfil">

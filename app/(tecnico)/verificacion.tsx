@@ -39,7 +39,7 @@ export default function Verificacion() {
       const [selfie] = await pickImages({ camera: true, front: true, max: 1 });
       if (!selfie) return;
       const r = await cuentaApi.compareBiometric(verificacion.id_verificacion, selfie);
-      if (r.match) { hapticSuccess(); toast.success('Identidad confirmada.'); refresh(); }
+      if (r.match) { hapticSuccess(); toast.success('Tu rostro coincide con tu registro. El equipo de verificación revisará tu INE.'); refresh(); }
       else toast.warning('No pudimos confirmar que eres tú. Intenta con buena luz y sin lentes.');
     } catch (e) {
       toast.error(e instanceof MediaPermissionError ? e.message : errorMessage(e));
@@ -84,7 +84,7 @@ export default function Verificacion() {
           icon="user-check"
           iconTone={bioOk ? 'success' : 'warning'}
           title="Biometría facial"
-          subtitle={bioOk ? 'Tu rostro coincide con tu INE' : 'Confirma que eres tú con una selfie'}
+          subtitle={bioOk ? 'Tu rostro coincide con tu foto de registro' : 'Confirma que eres tú con una selfie'}
           trailing={bioOk ? <Pill label="Aprobada" tone="success" size="sm" /> : undefined}
         />
       </Surface>
