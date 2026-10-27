@@ -20,7 +20,9 @@
         {
           "photosPermission": "Permitir que Click & Serve adjunte fotos del problema al solicitar un servicio."
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-sharing"
     ],
     "ios": {
       "supportsTablet": true
