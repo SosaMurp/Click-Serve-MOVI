@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatMoney, isoFromDmy, dmyFromIso, parseMoneyInput, formatTime12, formatDistance, formatDate } from '../format.ts';
+import { formatMoney, moneyPortion, sumMoney, parseMoneyInput, formatTime12, formatDistance, formatDate } from '../format.ts';
 
 test('formatMoney da formato de pesos a la cadena del servidor sin aritmética', () => {
   assert.equal(formatMoney('1160.0000'), '$1,160.00');
@@ -8,13 +8,6 @@ test('formatMoney da formato de pesos a la cadena del servidor sin aritmética',
   assert.equal(formatMoney('1234567.5'), '$1,234,567.50');
   assert.equal(formatMoney('0'), '$0.00');
   assert.equal(formatMoney(null), '—');
-});
-
-test('isoFromDmy valida fechas reales', () => {
-  assert.equal(isoFromDmy('10/05/1995'), '1995-05-10');
-  assert.equal(isoFromDmy('31/02/2000'), null);
-  assert.equal(isoFromDmy('1/5/95'), null);
-  assert.equal(dmyFromIso('1995-05-10'), '10/05/1995');
 });
 
 test('parseMoneyInput acepta hasta dos decimales y devuelve cadena normalizada', () => {
@@ -39,4 +32,20 @@ test('formatDistance usa metros bajo 1 km', () => {
 
 test('formatDate en español de México', () => {
   assert.equal(formatDate('2026-10-27'), '27 oct 2026');
+});
+
+test('moneyPortion toma todo o la mitad del saldo en centavos, sin flotantes', () => {
+  assert.equal(moneyPortion('1.1500', 1), '1.15');
+  assert.equal(moneyPortion('0.2900', 1), '0.29');
+  assert.equal(moneyPortion('4.35', 1), '4.35');
+  assert.equal(moneyPortion('943.0000', 0.5), '471.50');
+  assert.equal(moneyPortion('1.15', 0.5), '0.57');
+  assert.equal(moneyPortion(null, 1), '0.00');
+});
+
+test('sumMoney suma importes en centavos (vista previa de la cotización)', () => {
+  assert.equal(sumMoney(['0.10', '0.70']), '0.80');
+  assert.equal(sumMoney(['800.00', '360.00']), '1160.00');
+  assert.equal(sumMoney(['1.005', null, '']), '1.00');
+  assert.equal(sumMoney([]), '0.00');
 });

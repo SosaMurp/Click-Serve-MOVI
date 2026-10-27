@@ -5,7 +5,7 @@ import { AppBar, Banner, Button, Chip, color, font, ListItem, Screen, Skeleton, 
 import { ApiError, errorMessage } from '@/src/api/client';
 import { billeteraApi } from '@/src/api/endpoints';
 import { useLoader } from '@/src/lib/useLoader';
-import { formatMoney, parseMoneyInput } from '@/src/lib/format';
+import { formatMoney, moneyPortion, parseMoneyInput } from '@/src/lib/format';
 import { hapticSuccess } from '@/src/lib/media';
 import { useOperationKey } from '@/src/lib/useOperationKey';
 import { dialog } from '@/src/ui/dialog';
@@ -68,7 +68,7 @@ export default function Retiro() {
             </View>
             <Text variant="caption" tone={error ? 'danger' : 'muted'}>{error || `Disponible ${formatMoney(saldo)} · mínimo ${formatMoney(minimo)}`}</Text>
             <View style={styles.chips}>
-              {[0.5, 1].map((f) => <Chip key={f} label={f === 1 ? 'Todo' : 'La mitad'} onPress={() => { setMonto((Math.floor(saldo * f * 100) / 100).toFixed(2)); setError(null); }} />)}
+              {([0.5, 1] as const).map((f) => <Chip key={f} label={f === 1 ? 'Todo' : 'La mitad'} onPress={() => { setMonto(moneyPortion(w?.saldo_actual, f)); setError(null); }} />)}
             </View>
           </Surface>
           {w.tiene_clabe ? (

@@ -19,6 +19,28 @@ export function formatMoney(value: string | number | null | undefined, opts: { c
   return opts.currency ? `${out} MXN` : out;
 }
 
+// Las dos operaciones de dinero que la app sí hace (atajos de retiro y vista previa de una cotización)
+// van en centavos enteros: con flotantes se pierde un centavo ("1.15" * 1 → "1.14").
+function toCents(value: string | null | undefined): number {
+  const [i = '0', d = ''] = String(value || '0').trim().split('.');
+  return Number(i || '0') * 100 + Number((d + '00').slice(0, 2));
+}
+
+function fromCents(cents: number): string {
+  return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
+}
+
+// Todo (1) o la mitad (0.5) de un saldo del servidor. La mitad de un número impar de centavos baja.
+export function moneyPortion(value: string | null | undefined, part: 1 | 0.5): string {
+  const cents = toCents(value);
+  return fromCents(part === 1 ? cents : Math.floor(cents / 2));
+}
+
+// Vista previa de la suma de conceptos; el total oficial lo calcula el servidor.
+export function sumMoney(values: (string | null | undefined)[]): string {
+  return fromCents(values.reduce((acc, v) => acc + toCents(v), 0));
+}
+
 // Normaliza lo que la persona escribe ("1,160.5") a una cadena con dos decimales ("1160.50").
 export function parseMoneyInput(text: string): string | null {
   const s = String(text ?? '').replace(/[,\s$]/g, '');
@@ -27,22 +49,6 @@ export function parseMoneyInput(text: string): string | null {
   const normalized = `${i.replace(/^0+(?=\d)/, '')}.${(d + '00').slice(0, 2)}`;
   if (/^0+\.00$/.test(normalized)) return null;
   return normalized;
-}
-
-export function isoFromDmy(dmy: string): string | null {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(dmy ?? '').trim());
-  if (!m) return null;
-  const day = Number(m[1]);
-  const month = Number(m[2]);
-  const year = Number(m[3]);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
-  return `${m[3]}-${m[2]}-${m[1]}`;
-}
-
-export function dmyFromIso(iso: string | null | undefined): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
 }
 
 function toDate(value: string | Date): Date {

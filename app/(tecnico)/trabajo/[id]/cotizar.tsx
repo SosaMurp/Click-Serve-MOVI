@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { goBack } from '@/src/lib/nav';
 import { AppBar, Button, color, Divider, IconButton, Money, radius, Screen, Segmented, space, Surface, Text, TextField } from '@/src/design';
 import { errorMessage } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
-import { parseMoneyInput } from '@/src/lib/format';
+import { parseMoneyInput, sumMoney } from '@/src/lib/format';
 import { hapticSuccess } from '@/src/lib/media';
 import { useSolicitud } from '@/src/features/orders/hooks';
 import { toast } from '@/src/ui/toast';
@@ -39,7 +39,7 @@ export default function Cotizar() {
   }, [s, loaded]);
 
   const parsed = lineas.map((l) => ({ ...l, value: parseMoneyInput(l.monto) }));
-  const total = useMemo(() => parsed.reduce((acc, l) => acc + (l.value ? Number(l.value) : 0), 0), [parsed]);
+  const total = sumMoney(parsed.map((l) => l.value));
   const invalid = parsed.some((l) => !l.descripcion.trim() || !l.value);
 
   const update = (key: number, patch: Partial<Linea>) => setLineas((xs) => xs.map((x) => (x.key === key ? { ...x, ...patch } : x)));
@@ -67,7 +67,7 @@ export default function Cotizar() {
         <View style={styles.footer}>
           <View style={styles.total}>
             <Text variant="caption" tone="muted">Total (IVA incluido)</Text>
-            <Money value={total.toFixed(2)} size="lg" />
+            <Money value={total} size="lg" />
           </View>
           <Button title="Enviar al cliente" icon="send" onPress={submit} loading={sending} size="lg" style={styles.flex} />
         </View>
