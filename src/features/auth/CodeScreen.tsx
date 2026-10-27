@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppBar, Banner, Button, OtpField, Screen, space, Text } from '../../design';
+import { errorMessage } from '../../api/client';
 
 type Props = {
   title: string;
@@ -50,6 +51,8 @@ export function CodeScreen({ title, heading, body, onCode, onResend, resendLabel
       setCooldown(60);
       setError(null);
       setReset((r) => r + 1);
+    } catch (e) {
+      setError(errorMessage(e, 'No pudimos reenviar el código. Intenta de nuevo.'));
     } finally {
       setBusy(false);
     }

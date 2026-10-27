@@ -143,9 +143,15 @@ export default function NuevaSolicitud() {
       hapticSuccess();
       const id = String(solicitud.id_solicitud);
       if (modo === 'automatica') {
-        await solicitudesApi.automatica(id).catch(() => {});
-        toast.success(`Solicitud ${solicitud.folio} enviada. Buscamos al técnico más cercano.`);
-        router.replace({ pathname: '/orden/[id]', params: { id } });
+        try {
+          await solicitudesApi.automatica(id);
+          toast.success(`Solicitud ${solicitud.folio} enviada. Buscamos al técnico más cercano.`);
+          router.replace({ pathname: '/orden/[id]', params: { id } });
+        } catch (err) {
+          // La solicitud ya existe: se manda a elegir técnico, donde puede reintentar la búsqueda automática.
+          toast.warning(`Solicitud ${solicitud.folio} creada, pero no pudimos iniciar la búsqueda automática: ${errorMessage(err)}`);
+          router.replace({ pathname: '/elegir-tecnico/[id]', params: { id } });
+        }
       } else {
         router.replace({ pathname: '/elegir-tecnico/[id]', params: { id } });
       }

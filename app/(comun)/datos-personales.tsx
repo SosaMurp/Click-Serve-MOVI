@@ -50,8 +50,9 @@ export default function DatosPersonales() {
 
   async function save() {
     const e: Partial<Record<Field, string>> = {};
-    if (f.nombre.trim().length < 2) e.nombre = 'Escribe tu nombre.';
-    if (f.apellido.trim().length < 2) e.apellido = 'Escribe tu apellido.';
+    // Con identidad verificada el nombre no se muestra como editable ni se envía: no se valida.
+    if (!nameLocked && f.nombre.trim().length < 2) e.nombre = 'Escribe tu nombre.';
+    if (!nameLocked && f.apellido.trim().length < 2) e.apellido = 'Escribe tu apellido.';
     if (f.telefono && !isPhoneMx(f.telefono)) e.telefono = 'Escribe un teléfono de 10 dígitos.';
     setErrors(e);
     if (Object.keys(e).length) return;
