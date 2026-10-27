@@ -1,97 +1,113 @@
 import { Platform } from 'react-native';
 
-// Mundo visual: rótulos pintados a mano de los talleres de Lázaro Cárdenas.
-// Cal blanca de fondo, esmaltes planos (cobalto, amarillo cromo, verde bandera, bermellón) y tinta negra.
+// Identidad tomada del logo de Click & Serve: azul profundo del pin y naranja del cursor.
+// Fondo casi blanco, tarjetas blancas muy redondeadas y bloques pastel derivados de esos dos colores.
+// Verde, ámbar y rojo se reservan para estados (pagado, requiere acción, error o SOS).
 export const color = {
-  ground: '#FFFFFF',
-  groundAlt: '#F3F4F6',
+  ground: '#F7F8FA',
+  groundAlt: '#EEF1F5',
   surface: '#FFFFFF',
-  surfaceSunk: '#F7F8FA',
-  line: '#E3E5EA',
-  lineStrong: '#C9CDD6',
+  surfaceSunk: '#F2F4F7',
+  line: '#E6E9EF',
+  lineStrong: '#D0D5DD',
 
-  ink: '#16181D',
-  inkSoft: '#474D5B',
-  inkMuted: '#666C7A',
+  ink: '#141A23',
+  inkSoft: '#475467',
+  inkMuted: '#667085',
   inkOnColor: '#FFFFFF',
 
-  cobalt: '#1D3FBF',
-  cobaltDeep: '#132C8C',
-  cobaltShade: '#0B1C5C',
-  cobaltSoft: '#E7ECFB',
-  cobaltInk: '#132C8C',
+  brand: '#0B4F85',
+  brandDeep: '#083C66',
+  brandSoft: '#D8E9F8',
+  brandMid: '#B9D6F2',
+  brandInk: '#0B4F85',
 
-  chrome: '#FFC21A',
-  chromeShade: '#C98A00',
-  chromeSoft: '#FFF4D1',
-  chromeInk: '#5A4100',
+  accent: '#E8801F',
+  accentPressed: '#CF6E12',
+  accentSoft: '#FFE3CC',
+  accentInk: '#8A4300',
 
-  verde: '#087A3B',
-  verdeShade: '#03481F',
-  verdeSoft: '#E2F3E8',
-  verdeInk: '#065C2C',
+  navy: '#0F1E2E',
 
-  bermellon: '#D7261E',
-  bermellonShade: '#7E0F0A',
-  bermellonSoft: '#FCE7E5',
-  bermellonInk: '#A1170F',
+  success: '#138A4B',
+  successSoft: '#DDF3E6',
+  successInk: '#0B6235',
 
-  carbon: '#23262E',
-  carbonShade: '#000000',
+  warning: '#F2A91E',
+  warningSoft: '#FFF1D1',
+  warningInk: '#7A4F00',
 
-  scrim: 'rgba(16, 18, 24, 0.48)',
-  focus: '#1D3FBF',
+  danger: '#D92D20',
+  dangerSoft: '#FDE4E2',
+  dangerInk: '#A41F15',
+
+  scrim: 'rgba(15, 30, 46, 0.45)',
+  focus: '#E8801F',
 } as const;
 
-export type Tone = 'cobalt' | 'chrome' | 'verde' | 'bermellon' | 'carbon' | 'neutral';
+export type Tone = 'brand' | 'accent' | 'success' | 'warning' | 'danger' | 'navy' | 'neutral';
 
-// Cada tono de esmalte con su tinta, su sombra de letra y su versión suave para fondos.
-export const tones: Record<Tone, { bg: string; fg: string; shade: string; soft: string; softInk: string }> = {
-  cobalt: { bg: color.cobalt, fg: color.inkOnColor, shade: color.cobaltShade, soft: color.cobaltSoft, softInk: color.cobaltInk },
-  chrome: { bg: color.chrome, fg: color.ink, shade: color.chromeShade, soft: color.chromeSoft, softInk: color.chromeInk },
-  verde: { bg: color.verde, fg: color.inkOnColor, shade: color.verdeShade, soft: color.verdeSoft, softInk: color.verdeInk },
-  bermellon: { bg: color.bermellon, fg: color.inkOnColor, shade: color.bermellonShade, soft: color.bermellonSoft, softInk: color.bermellonInk },
-  carbon: { bg: color.carbon, fg: color.inkOnColor, shade: color.carbonShade, soft: color.groundAlt, softInk: color.inkSoft },
-  neutral: { bg: color.groundAlt, fg: color.ink, shade: color.lineStrong, soft: color.groundAlt, softInk: color.inkSoft },
+// Cada tono con su versión llena (para acentos fuertes) y su versión suave (para píldoras y bloques).
+export const tones: Record<Tone, { bg: string; fg: string; soft: string; softInk: string }> = {
+  brand: { bg: color.brand, fg: color.inkOnColor, soft: color.brandSoft, softInk: color.brandInk },
+  accent: { bg: color.accent, fg: color.ink, soft: color.accentSoft, softInk: color.accentInk },
+  success: { bg: color.success, fg: color.inkOnColor, soft: color.successSoft, softInk: color.successInk },
+  warning: { bg: color.warning, fg: color.ink, soft: color.warningSoft, softInk: color.warningInk },
+  danger: { bg: color.danger, fg: color.inkOnColor, soft: color.dangerSoft, softInk: color.dangerInk },
+  navy: { bg: color.navy, fg: color.inkOnColor, soft: color.groundAlt, softInk: color.inkSoft },
+  neutral: { bg: color.groundAlt, fg: color.ink, soft: color.groundAlt, softInk: color.inkSoft },
 };
 
 export const space = { xxs: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 } as const;
 
-export const radius = { plate: 6, sm: 8, md: 12, lg: 20, full: 999 } as const;
+export const radius = { xs: 8, sm: 12, md: 20, lg: 28, xl: 32, full: 999 } as const;
 
 // RNF-30: objetivos táctiles de al menos 48 dp.
 export const touch = { min: 48 } as const;
 
 export const font = {
-  sign: 'Bungee_400Regular',
-  ui: Platform.select({ web: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', default: undefined }),
-};
+  heading: 'Outfit_600SemiBold',
+  headingMedium: 'Outfit_500Medium',
+  headingBold: 'Outfit_700Bold',
+  body: 'Inter_400Regular',
+  bodyMedium: 'Inter_500Medium',
+  bodySemibold: 'Inter_600SemiBold',
+  bodyBold: 'Inter_700Bold',
+} as const;
 
 export const type = {
-  display: { fontFamily: font.sign, fontSize: 30, lineHeight: 36, letterSpacing: 0.2 },
-  headline: { fontFamily: font.sign, fontSize: 22, lineHeight: 28, letterSpacing: 0.2 },
-  appbar: { fontFamily: font.sign, fontSize: 19, lineHeight: 24, letterSpacing: 0.3 },
-  title: { fontFamily: font.ui, fontSize: 18, lineHeight: 24, fontWeight: '700' },
-  subtitle: { fontFamily: font.ui, fontSize: 16, lineHeight: 22, fontWeight: '600' },
-  body: { fontFamily: font.ui, fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  bodySm: { fontFamily: font.ui, fontSize: 14, lineHeight: 20, fontWeight: '400' },
-  label: { fontFamily: font.ui, fontSize: 15, lineHeight: 20, fontWeight: '600' },
-  caption: { fontFamily: font.ui, fontSize: 12, lineHeight: 16, fontWeight: '500' },
-  overline: { fontFamily: font.ui, fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 0.4 },
+  display: { fontFamily: font.heading, fontSize: 32, lineHeight: 38 },
+  number: { fontFamily: font.heading, fontSize: 30, lineHeight: 36 },
+  headline: { fontFamily: font.heading, fontSize: 26, lineHeight: 32 },
+  appbar: { fontFamily: font.heading, fontSize: 20, lineHeight: 26 },
+  title: { fontFamily: font.heading, fontSize: 18, lineHeight: 24 },
+  subtitle: { fontFamily: font.bodySemibold, fontSize: 16, lineHeight: 22 },
+  body: { fontFamily: font.body, fontSize: 16, lineHeight: 24 },
+  bodySm: { fontFamily: font.body, fontSize: 14, lineHeight: 20 },
+  label: { fontFamily: font.bodySemibold, fontSize: 15, lineHeight: 20 },
+  caption: { fontFamily: font.bodyMedium, fontSize: 12, lineHeight: 16 },
+  overline: { fontFamily: font.bodyMedium, fontSize: 13, lineHeight: 18 },
 } as const;
 
 export type TypeVariant = keyof typeof type;
 
+// Sombras casi invisibles: la separación la dan el fondo claro y los radios grandes.
 export const elevation = {
   0: {},
   1: Platform.select({
-    web: { boxShadow: '0 1px 3px rgba(22, 24, 29, 0.10)' } as object,
-    default: { shadowColor: '#16181D', shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+    web: { boxShadow: '0 4px 18px rgba(16, 24, 40, 0.06)' } as object,
+    default: { shadowColor: '#101828', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   }),
   2: Platform.select({
-    web: { boxShadow: '0 6px 18px rgba(22, 24, 29, 0.14)' } as object,
-    default: { shadowColor: '#16181D', shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
+    web: { boxShadow: '0 12px 32px rgba(16, 24, 40, 0.12)' } as object,
+    default: { shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 6 },
   }),
 } as const;
+
+// Degradado de la tarjeta destacada: azul de marca → cielo → durazno.
+export const gradient = {
+  hero: [color.brand, '#4F8FC6', '#F3B98A'] as const,
+  heroText: color.inkOnColor,
+};
 
 export const motion = { fast: 120, base: 200, slow: 320 } as const;

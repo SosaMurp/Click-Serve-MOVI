@@ -20,7 +20,7 @@ export function Sheet({ visible, onClose, title, children, footer }: Props) {
             <View style={styles.handle} />
             <View style={styles.header}>
               <Text variant="title" style={styles.flex} accessibilityRole="header">{title}</Text>
-              <IconButton icon="close" label="Cerrar" onPress={onClose} />
+              <IconButton icon="x" label="Cerrar" onPress={onClose} />
             </View>
             <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent} keyboardShouldPersistTaps="handled">
               {children}
@@ -36,7 +36,7 @@ export function Sheet({ visible, onClose, title, children, footer }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.scrim, justifyContent: 'flex-end' },
   kav: { width: '100%', alignItems: 'center' },
-  panel: { width: '100%', maxWidth: 640, backgroundColor: color.surface, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg },
+  panel: { width: '100%', maxWidth: 640, backgroundColor: color.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl },
   handle: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: color.lineStrong, marginTop: space.sm },
   header: { flexDirection: 'row', alignItems: 'center', paddingLeft: space.xl, paddingRight: space.sm, paddingTop: space.xs },
   flex: { flex: 1 },

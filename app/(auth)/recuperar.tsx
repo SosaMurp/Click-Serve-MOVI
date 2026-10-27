@@ -35,13 +35,13 @@ export default function Recuperar() {
   };
 
   return (
-    <Screen header={<AppBar title="Recuperar contraseña" fallbackHref="/login" />} footer={<Button title="Enviar código" icon="send-outline" onPress={submit} loading={loading} full />}>
+    <Screen header={<AppBar title="Recuperar contraseña" fallbackHref="/login" />} footer={<Button title="Enviar código" icon="send" onPress={submit} loading={loading} full />}>
       <Text variant="headline" style={styles.heading} accessibilityRole="header">¿Olvidaste tu contraseña?</Text>
       <Text variant="body" tone="soft" style={styles.body}>Te enviaremos un código para crear una nueva. Tus demás sesiones se cerrarán por seguridad.</Text>
       {error ? <Banner tone="error" title="No pudimos enviar el código" body={error} style={styles.banner} /> : null}
       <TextField
         label="Correo de tu cuenta"
-        icon="email-outline"
+        icon="mail"
         keyboardType="email-address"
         autoCapitalize="none"
         placeholder="tu@correo.mx"
@@ -54,7 +54,7 @@ export default function Recuperar() {
       <Segmented<Canal>
         value={canal}
         onChange={setCanal}
-        options={[{ value: 'EMAIL', label: 'Correo', icon: 'email-outline' }, { value: 'SMS', label: 'SMS', icon: 'message-text-outline' }]}
+        options={[{ value: 'EMAIL', label: 'Correo', icon: 'mail' }, { value: 'SMS', label: 'SMS', icon: 'message-square' }]}
       />
       <Text variant="bodySm" tone="muted" style={styles.hint}>
         {canal === 'SMS' ? 'Lo enviaremos al celular que registraste en tu cuenta.' : 'Revisa también la carpeta de correo no deseado.'}

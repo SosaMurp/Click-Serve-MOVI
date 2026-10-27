@@ -4,15 +4,16 @@ import { estadoInfo, stepIndex, STEPS, isActive } from '../estado.ts';
 
 test('el cliente ve una placa que le dice qué hacer cuando le toca', () => {
   assert.deepEqual(estadoInfo('POR_CONFIRMAR', 'cliente').label, 'Confirma y paga');
-  assert.equal(estadoInfo('POR_CONFIRMAR', 'cliente').tone, 'chrome');
+  assert.equal(estadoInfo('POR_CONFIRMAR', 'cliente').tone, 'warning');
   assert.equal(estadoInfo('POR_CONFIRMAR', 'tecnico').label, 'Por confirmar');
 });
 
-test('cada estado tiene tono e ícono, y pagado es verde', () => {
+test('cada estado tiene tono e ícono; verde, ámbar y rojo solo para estados', () => {
   assert.equal(estadoInfo('FINALIZADA', 'cliente').label, 'Pagado');
-  assert.equal(estadoInfo('FINALIZADA', 'cliente').tone, 'verde');
-  assert.equal(estadoInfo('CANCELADA', 'tecnico').tone, 'carbon');
-  assert.equal(estadoInfo('SUSPENDIDA', 'cliente').tone, 'bermellon');
+  assert.equal(estadoInfo('FINALIZADA', 'cliente').tone, 'success');
+  assert.equal(estadoInfo('CANCELADA', 'tecnico').tone, 'neutral');
+  assert.equal(estadoInfo('SUSPENDIDA', 'cliente').tone, 'danger');
+  assert.equal(estadoInfo('PENDIENTE', 'tecnico').tone, 'accent');
   assert.ok(estadoInfo('EN_CAMINO', 'cliente').icon);
 });
 

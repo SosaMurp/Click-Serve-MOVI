@@ -63,13 +63,13 @@ export function CodeScreen({ title, heading, body, onCode, onResend, resendLabel
       <Text variant="body" tone="soft" style={styles.body}>{body}</Text>
       <OtpField onComplete={submit} disabled={busy} error={error} resetKey={reset} />
       {remaining !== null ? (
-        <Text variant="bodySm" tone={remaining < 30 ? 'bermellon' : 'muted'} align="center" style={styles.timer} tabular>
+        <Text variant="bodySm" tone={remaining < 30 ? 'danger' : 'muted'} align="center" style={styles.timer} tabular>
           {remaining > 0 ? `El código vence en ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}` : 'El tiempo se agotó. Vuelve a iniciar sesión.'}
         </Text>
       ) : null}
       {onResend ? (
         <View style={styles.resend}>
-          <Button title={cooldown > 0 ? `${resendLabel} en ${cooldown} s` : resendLabel} variant="text" icon="refresh" onPress={resend} disabled={cooldown > 0 || busy} />
+          <Button title={cooldown > 0 ? `${resendLabel} en ${cooldown} s` : resendLabel} variant="text" icon="refresh-cw" onPress={resend} disabled={cooldown > 0 || busy} />
         </View>
       ) : null}
       {__DEV__ ? (

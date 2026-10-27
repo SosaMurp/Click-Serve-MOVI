@@ -43,5 +43,5 @@ export function SkeletonList({ rows = 3 }: { rows?: number }) {
 const styles = StyleSheet.create({
   block: { backgroundColor: color.groundAlt, borderRadius: radius.sm },
   list: { gap: space.md },
-  card: { gap: space.sm, padding: space.lg, borderRadius: radius.md, borderWidth: 1, borderColor: color.line },
+  card: { gap: space.sm, padding: space.lg, borderRadius: radius.lg, backgroundColor: color.surface },
 });

@@ -38,13 +38,13 @@ export default function NuevaContrasena() {
   };
 
   return (
-    <Screen header={<AppBar title="Nueva contraseña" fallbackHref="/login" />} footer={<Button title="Guardar contraseña" icon="content-save-outline" onPress={submit} loading={loading} full />}>
+    <Screen header={<AppBar title="Nueva contraseña" fallbackHref="/login" />} footer={<Button title="Guardar contraseña" icon="save" onPress={submit} loading={loading} full />}>
       <Text variant="headline" style={styles.heading} accessibilityRole="header">Crea tu nueva contraseña</Text>
       <Text variant="body" tone="soft" style={styles.body}>Usa una que no hayas usado antes en otras apps.</Text>
       {error ? <Banner tone="error" title="No se guardó la contraseña" body={error} style={styles.banner} /> : null}
-      <TextField label="Nueva contraseña" icon="lock-outline" password value={password} onChangeText={(t) => { setPassword(t); setErrors((x) => ({ ...x, password: undefined })); }} error={errors.password} autoComplete="new-password" />
+      <TextField label="Nueva contraseña" icon="lock" password value={password} onChangeText={(t) => { setPassword(t); setErrors((x) => ({ ...x, password: undefined })); }} error={errors.password} autoComplete="new-password" />
       <PasswordChecklist value={password} />
-      <TextField label="Confírmala" icon="lock-check-outline" password value={confirm} onChangeText={(t) => { setConfirm(t); setErrors((x) => ({ ...x, confirm: undefined })); }} error={errors.confirm} autoComplete="new-password" onSubmitEditing={submit} />
+      <TextField label="Confírmala" icon="lock" password value={confirm} onChangeText={(t) => { setConfirm(t); setErrors((x) => ({ ...x, confirm: undefined })); }} error={errors.confirm} autoComplete="new-password" onSubmitEditing={submit} />
     </Screen>
   );
 }

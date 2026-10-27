@@ -1,7 +1,9 @@
 import React from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { useFonts, Bungee_400Regular } from '@expo-google-fonts/bungee';
+import { useFonts } from 'expo-font';
+import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { SessionProvider, useSession } from '@/src/state/session';
@@ -9,15 +11,16 @@ import { ConnectivityBanner, ConnectivityProvider } from '@/src/state/connectivi
 import { RealtimeProvider } from '@/src/state/realtime';
 import { DialogHost } from '@/src/ui/dialog';
 import { ToastHost } from '@/src/ui/toast';
-import { color, iconFont, Plate, Text } from '@/src/design';
+import { color, iconFont, LogoMark, Text, Wordmark } from '@/src/design';
 
 function Splash() {
   return (
     <View style={styles.splash}>
-      <StatusBar style="light" />
-      <Plate label="Click & Serve" tone="chrome" size="lg" />
-      <Text variant="bodySm" style={styles.splashText}>Lázaro Cárdenas</Text>
-      <ActivityIndicator color={color.inkOnColor} style={{ marginTop: 24 }} />
+      <StatusBar style="dark" />
+      <LogoMark size={72} />
+      <View style={{ marginTop: 16 }}><Wordmark size={30} /></View>
+      <Text variant="caption" tone="muted" style={styles.splashText}>Tech & Service · Lázaro Cárdenas</Text>
+      <ActivityIndicator color={color.brand} style={{ marginTop: 24 }} />
     </View>
   );
 }
@@ -47,7 +50,7 @@ function RootStack() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Bungee_400Regular, ...iconFont });
+  const [fontsLoaded] = useFonts({ Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, ...iconFont });
   return (
     <SafeAreaProvider>
       <SessionProvider>
@@ -65,6 +68,6 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  splash: { flex: 1, backgroundColor: color.cobalt, alignItems: 'center', justifyContent: 'center' },
-  splashText: { color: '#C9D3F5', marginTop: 12, letterSpacing: 2, textTransform: 'uppercase' },
+  splash: { flex: 1, backgroundColor: color.ground, alignItems: 'center', justifyContent: 'center' },
+  splashText: { marginTop: 6, letterSpacing: 1, textTransform: 'uppercase' },
 });

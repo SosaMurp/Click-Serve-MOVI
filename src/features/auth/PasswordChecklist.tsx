@@ -14,8 +14,8 @@ export function PasswordChecklist({ value }: { value: string }) {
         const ok = value.length > 0 && !missing.includes(r);
         return (
           <View key={r} style={styles.item}>
-            <Icon name={ok ? 'check-circle' : 'circle-outline'} size={16} color={ok ? color.verde : color.inkMuted} />
-            <Text variant="caption" tone={ok ? 'verde' : 'muted'}>{r}</Text>
+            <Icon name={ok ? 'check-circle' : 'circle'} size={16} color={ok ? color.success : color.inkMuted} />
+            <Text variant="caption" tone={ok ? 'success' : 'muted'}>{r}</Text>
           </View>
         );
       })}

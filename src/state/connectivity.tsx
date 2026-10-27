@@ -48,8 +48,8 @@ export function ConnectivityBanner() {
   const maintenance = state === 'maintenance';
   return (
     <View pointerEvents="none" style={[styles.wrap, { top: insets.top + 64 }]} accessibilityLiveRegion="assertive">
-      <View style={[styles.banner, { backgroundColor: maintenance ? color.chrome : color.carbon }]}>
-        <Icon name={maintenance ? 'wrench-outline' : 'wifi-off'} size={18} color={maintenance ? color.ink : color.inkOnColor} />
+      <View style={[styles.banner, { backgroundColor: maintenance ? color.warning : color.navy }]}>
+        <Icon name={maintenance ? 'tool' : 'wifi-off'} size={18} color={maintenance ? color.ink : color.inkOnColor} />
         <Text variant="bodySm" weight="600" style={{ color: maintenance ? color.ink : color.inkOnColor, flex: 1 }}>
           {maintenance ? 'Click & Serve está en mantenimiento. Intenta en unos minutos.' : 'Sin conexión con el servidor. Las acciones no se guardarán hasta que vuelva.'}
         </Text>

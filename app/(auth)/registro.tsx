@@ -99,7 +99,7 @@ export default function Registro() {
       {step > 0 ? <Button title="Atrás" variant="outlined" onPress={() => setStep((s) => s - 1)} style={styles.flex} full /> : null}
       {step < 2
         ? <Button title="Siguiente" iconRight="arrow-right" onPress={next} style={styles.flex} full />
-        : <Button title="Crear cuenta" icon="account-plus-outline" onPress={submit} loading={loading} style={styles.flex} full />}
+        : <Button title="Crear cuenta" icon="user-plus" onPress={submit} loading={loading} style={styles.flex} full />}
     </View>
   );
 
@@ -123,7 +123,7 @@ export default function Registro() {
           <Segmented<Rol>
             value={rol}
             onChange={setRol}
-            options={[{ value: 'cliente', label: 'Cliente', icon: 'home-outline' }, { value: 'tecnico', label: 'Técnico', icon: 'account-hard-hat-outline' }]}
+            options={[{ value: 'cliente', label: 'Cliente', icon: 'home' }, { value: 'tecnico', label: 'Técnico', icon: 'tool' }]}
           />
           <Text variant="bodySm" tone="muted" style={styles.roleHint}>
             {rol === 'cliente' ? 'Pide técnicos verificados para tu casa, negocio o auto.' : 'Recibe trabajos cercanos de tu especialidad y cobra en la app. Tu cuenta se revisa antes de aceptar trabajos.'}
@@ -132,17 +132,17 @@ export default function Registro() {
             <View style={styles.flex}><TextField label="Nombre" value={nombre} onChangeText={(t) => { setNombre(t); clear('nombre'); }} error={errors.nombre} autoComplete="given-name" /></View>
             <View style={styles.flex}><TextField label="Apellidos" value={apellidos} onChangeText={(t) => { setApellidos(t); clear('apellidos'); }} error={errors.apellidos} autoComplete="family-name" /></View>
           </View>
-          <TextField label="Teléfono celular" icon="phone-outline" placeholder="10 dígitos" keyboardType="phone-pad" maxLength={14} value={telefono} onChangeText={(t) => { setTelefono(t); clear('telefono'); }} error={errors.telefono} autoComplete="tel" />
-          <TextField label="Correo electrónico" icon="email-outline" placeholder="tu@correo.mx" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={(t) => { setEmail(t); clear('email'); }} error={errors.email} autoComplete="email" />
+          <TextField label="Teléfono celular" icon="phone" placeholder="10 dígitos" keyboardType="phone-pad" maxLength={14} value={telefono} onChangeText={(t) => { setTelefono(t); clear('telefono'); }} error={errors.telefono} autoComplete="tel" />
+          <TextField label="Correo electrónico" icon="mail" placeholder="tu@correo.mx" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={(t) => { setEmail(t); clear('email'); }} error={errors.email} autoComplete="email" />
         </>
       ) : null}
 
       {step === 1 ? (
         <>
           <DateField label="Fecha de nacimiento" value={fecha} onChange={(v) => { setFecha(v); clear('fecha'); }} max={maxBirthDate()} min="1920-01-01" initialYear={1995} error={errors.fecha} helper="Debes ser mayor de 18 años." />
-          <TextField label="Contraseña" icon="lock-outline" password value={password} onChangeText={(t) => { setPassword(t); clear('password'); }} error={errors.password} autoComplete="new-password" />
+          <TextField label="Contraseña" icon="lock" password value={password} onChangeText={(t) => { setPassword(t); clear('password'); }} error={errors.password} autoComplete="new-password" />
           <PasswordChecklist value={password} />
-          <TextField label="Confirma tu contraseña" icon="lock-check-outline" password value={confirm} onChangeText={(t) => { setConfirm(t); clear('confirm'); }} error={errors.confirm} autoComplete="new-password" />
+          <TextField label="Confirma tu contraseña" icon="lock" password value={confirm} onChangeText={(t) => { setConfirm(t); clear('confirm'); }} error={errors.confirm} autoComplete="new-password" />
         </>
       ) : null}
 
@@ -151,16 +151,16 @@ export default function Registro() {
           <Text variant="body" tone="soft" style={styles.intro}>
             Para cuidar a clientes y técnicos verificamos que seas tú. Usa tu INE vigente y buena luz.
           </Text>
-          <DocCapture step={1} title="INE · frente" hint="Que se lean tu nombre y tu foto." icon="card-account-details-outline" file={ineFrente} onChange={(f) => { setIneFrente(f); clear('docs'); }} />
-          <DocCapture step={2} title="INE · reverso" hint="Que se vea el código de barras." icon="card-bulleted-outline" file={ineReverso} onChange={(f) => { setIneReverso(f); clear('docs'); }} disabled={!ineFrente} />
-          <DocCapture step={3} title="Tu rostro" hint="De frente, sin lentes oscuros ni gorra." icon="face-recognition" file={rostro} onChange={(f) => { setRostro(f); clear('docs'); }} front disabled={!ineReverso} />
-          {errors.docs ? <Text variant="caption" tone="bermellon" style={styles.docsError}>{errors.docs}</Text> : null}
+          <DocCapture step={1} title="INE · frente" hint="Que se lean tu nombre y tu foto." icon="credit-card" file={ineFrente} onChange={(f) => { setIneFrente(f); clear('docs'); }} />
+          <DocCapture step={2} title="INE · reverso" hint="Que se vea el código de barras." icon="credit-card" file={ineReverso} onChange={(f) => { setIneReverso(f); clear('docs'); }} disabled={!ineFrente} />
+          <DocCapture step={3} title="Tu rostro" hint="De frente, sin lentes oscuros ni gorra." icon="smile" file={rostro} onChange={(f) => { setRostro(f); clear('docs'); }} front disabled={!ineReverso} />
+          {errors.docs ? <Text variant="caption" tone="danger" style={styles.docsError}>{errors.docs}</Text> : null}
           <Checkbox checked={acepta} onChange={(v) => { setAcepta(v); clear('acepta'); }} error={errors.acepta}>
             <Text variant="bodySm" tone="soft">
               Acepto el{' '}
-              <Text variant="bodySm" tone="cobalt" weight="700" onPress={() => router.push('/legal/privacidad')} accessibilityRole="link">aviso de privacidad</Text>
+              <Text variant="bodySm" tone="brand" weight="700" onPress={() => router.push('/legal/privacidad')} accessibilityRole="link">aviso de privacidad</Text>
               {' '}y los{' '}
-              <Text variant="bodySm" tone="cobalt" weight="700" onPress={() => router.push('/legal/terminos')} accessibilityRole="link">términos de uso</Text>.
+              <Text variant="bodySm" tone="brand" weight="700" onPress={() => router.push('/legal/terminos')} accessibilityRole="link">términos de uso</Text>.
               Mis datos e identificación se usan para verificar mi identidad y dar el servicio.
             </Text>
           </Checkbox>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   footer: { flexDirection: 'row', gap: space.sm },
   progress: { flexDirection: 'row', gap: space.xs, marginBottom: space.lg },
   bar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: color.line },
-  barOn: { backgroundColor: color.cobalt },
+  barOn: { backgroundColor: color.brand },
   banner: { marginBottom: space.lg },
   label: { marginBottom: space.sm },
   roleHint: { marginTop: space.sm, marginBottom: space.lg },

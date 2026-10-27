@@ -2,17 +2,20 @@ import React from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 import { Icon, IconName } from './Icon';
 import { Text } from './Text';
-import { color, radius, touch } from './tokens';
+import { color, elevation, radius, touch } from './tokens';
 
-type Variant = 'filled' | 'tonal' | 'outlined' | 'text' | 'danger' | 'success';
+// primary: naranja del logo con texto tinta (contraste AA); filled: azul de marca con texto blanco.
+type Variant = 'primary' | 'filled' | 'tonal' | 'outlined' | 'text' | 'danger' | 'success' | 'white';
 
 const VARIANTS: Record<Variant, { bg: string; fg: string; border?: string; pressed: string }> = {
-  filled: { bg: color.cobalt, fg: color.inkOnColor, pressed: color.cobaltDeep },
-  tonal: { bg: color.cobaltSoft, fg: color.cobaltInk, pressed: '#D5DEF8' },
-  outlined: { bg: 'transparent', fg: color.cobaltInk, border: color.lineStrong, pressed: color.cobaltSoft },
-  text: { bg: 'transparent', fg: color.cobaltInk, pressed: color.cobaltSoft },
-  danger: { bg: color.bermellon, fg: color.inkOnColor, pressed: color.bermellonInk },
-  success: { bg: color.verde, fg: color.inkOnColor, pressed: color.verdeInk },
+  primary: { bg: color.accent, fg: color.ink, pressed: color.accentPressed },
+  filled: { bg: color.brand, fg: color.inkOnColor, pressed: color.brandDeep },
+  tonal: { bg: color.brandSoft, fg: color.brandInk, pressed: color.brandMid },
+  outlined: { bg: color.surface, fg: color.ink, border: color.lineStrong, pressed: color.surfaceSunk },
+  text: { bg: 'transparent', fg: color.brandInk, pressed: color.brandSoft },
+  danger: { bg: color.danger, fg: color.inkOnColor, pressed: color.dangerInk },
+  success: { bg: color.success, fg: color.inkOnColor, pressed: color.successInk },
+  white: { bg: color.surface, fg: color.ink, pressed: color.surfaceSunk },
 };
 
 type Props = {
@@ -27,9 +30,10 @@ type Props = {
   size?: 'md' | 'lg';
   style?: ViewStyle;
   accessibilityHint?: string;
+  floating?: boolean;
 };
 
-export function Button({ title, onPress, variant = 'filled', icon, iconRight, loading, disabled, full, size = 'md', style, accessibilityHint }: Props) {
+export function Button({ title, onPress, variant = 'primary', icon, iconRight, loading, disabled, full, size = 'md', style, accessibilityHint, floating }: Props) {
   const v = VARIANTS[variant];
   const inactive = disabled || loading;
   return (
@@ -41,20 +45,20 @@ export function Button({ title, onPress, variant = 'filled', icon, iconRight, lo
       disabled={inactive}
       onPress={onPress}
       style={(state) => {
-        const { pressed } = state;
         const focused = (state as { focused?: boolean }).focused;
         const hovered = (state as { hovered?: boolean }).hovered;
         return [
           styles.base,
           {
             height: size === 'lg' ? 56 : touch.min,
-            backgroundColor: pressed || hovered ? v.pressed : v.bg,
+            backgroundColor: state.pressed || hovered ? v.pressed : v.bg,
             borderColor: v.border || 'transparent',
-            borderWidth: v.border ? 1.5 : 0,
+            borderWidth: v.border ? 1 : 0,
             alignSelf: full ? 'stretch' : 'flex-start',
-            paddingHorizontal: variant === 'text' ? 12 : 22,
+            paddingHorizontal: variant === 'text' ? 12 : 24,
             opacity: inactive && !loading ? 0.45 : 1,
           },
+          floating ? elevation[2] : null,
           focused && Platform.OS === 'web' ? styles.focus : null,
           style,
         ];
@@ -65,9 +69,7 @@ export function Button({ title, onPress, variant = 'filled', icon, iconRight, lo
       ) : (
         <View style={styles.row}>
           {icon ? <Icon name={icon} size={20} color={v.fg} /> : null}
-          <Text variant="label" style={{ color: v.fg }} numberOfLines={1}>
-            {title}
-          </Text>
+          <Text variant="label" style={{ color: v.fg }} numberOfLines={1}>{title}</Text>
           {iconRight ? <Icon name={iconRight} size={20} color={v.fg} /> : null}
         </View>
       )}
@@ -83,25 +85,40 @@ type IconButtonProps = {
   background?: string;
   size?: number;
   disabled?: boolean;
-  badge?: number;
+  badge?: number | boolean;
+  bordered?: boolean;
 };
 
-export function IconButton({ icon, onPress, label, tint = color.ink, background = 'transparent', size = 24, disabled, badge }: IconButtonProps) {
+// Botón de ícono circular de 48 dp (blanco en encabezados, azul marino para "ver más").
+export function IconButton({ icon, onPress, label, tint = color.ink, background = 'transparent', size = 22, disabled, badge, bordered }: IconButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={typeof badge === 'number' && badge > 0 ? `${label}, ${badge} pendientes` : label}
       disabled={disabled}
       onPress={onPress}
       hitSlop={4}
-      style={({ pressed }) => [styles.iconBtn, { backgroundColor: pressed ? 'rgba(127,127,127,0.18)' : background, opacity: disabled ? 0.4 : 1 }]}
+      style={({ pressed }) => [
+        styles.iconBtn,
+        { backgroundColor: background, opacity: disabled ? 0.4 : pressed ? 0.75 : 1 },
+        bordered ? styles.bordered : null,
+      ]}
     >
       <Icon name={icon} size={size} color={tint} />
       {badge ? (
-        <View style={styles.badge}>
-          <Text variant="caption" tone="onColor" style={styles.badgeText}>{badge > 9 ? '9+' : String(badge)}</Text>
-        </View>
+        typeof badge === 'number' ? (
+          <View style={styles.badge}><Text variant="caption" tone="onColor" style={styles.badgeText}>{badge > 9 ? '9+' : String(badge)}</Text></View>
+        ) : <View style={styles.dot} />
       ) : null}
+    </Pressable>
+  );
+}
+
+// Círculo azul marino con flecha, para "ver todo" (como en la referencia).
+export function CircleArrow({ onPress, label, icon = 'arrow-right' }: { onPress?: () => void; label: string; icon?: IconName }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={8} style={({ pressed }) => [styles.circle, pressed && { opacity: 0.8 }]}>
+      <Icon name={icon} size={18} color={color.inkOnColor} />
     </Pressable>
   );
 }
@@ -109,11 +126,11 @@ export function IconButton({ icon, onPress, label, tint = color.ink, background 
 const styles = StyleSheet.create({
   base: { borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  focus: { outlineStyle: 'solid', outlineWidth: 3, outlineColor: color.chrome, outlineOffset: 2 } as object,
+  focus: { outlineStyle: 'solid', outlineWidth: 3, outlineColor: color.focus, outlineOffset: 2 } as object,
   iconBtn: { width: touch.min, height: touch.min, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  badge: {
-    position: 'absolute', top: 6, right: 6, minWidth: 18, height: 18, borderRadius: 9,
-    backgroundColor: color.bermellon, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
-  },
-  badgeText: { fontSize: 10, lineHeight: 12, fontWeight: '700' },
+  bordered: { borderWidth: 1, borderColor: color.line },
+  badge: { position: 'absolute', top: 5, right: 5, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: color.danger, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  badgeText: { fontSize: 10, lineHeight: 12 },
+  dot: { position: 'absolute', top: 11, right: 12, width: 9, height: 9, borderRadius: 5, backgroundColor: color.danger, borderWidth: 2, borderColor: color.surface },
+  circle: { width: 36, height: 36, borderRadius: 18, backgroundColor: color.navy, alignItems: 'center', justifyContent: 'center' },
 });

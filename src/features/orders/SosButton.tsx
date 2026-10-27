@@ -44,7 +44,7 @@ export function SosButton({ idSolicitud, bottom = 96 }: { idSolicitud: number; b
 
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { bottom }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Botón SOS: enviar alerta de emergencia" onPress={send} disabled={sending} style={({ pressed }) => [styles.fab, pressed && { backgroundColor: color.bermellonInk }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Botón SOS: enviar alerta de emergencia" onPress={send} disabled={sending} style={({ pressed }) => [styles.fab, pressed && { backgroundColor: color.dangerInk }]}>
         {sending ? <ActivityIndicator color={color.inkOnColor} /> : <Text style={styles.label}>SOS</Text>}
       </Pressable>
     </View>
@@ -53,6 +53,6 @@ export function SosButton({ idSolicitud, bottom = 96 }: { idSolicitud: number; b
 
 const styles = StyleSheet.create({
   wrap: { position: 'absolute', right: 16, zIndex: 100, elevation: 12 },
-  fab: { width: 64, height: 64, borderRadius: 32, backgroundColor: color.bermellon, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: color.surface, ...elevation[2] },
-  label: { fontFamily: font.sign, fontSize: 18, lineHeight: 22, color: color.inkOnColor },
+  fab: { width: 64, height: 64, borderRadius: 32, backgroundColor: color.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: color.surface, ...elevation[2] },
+  label: { fontFamily: font.headingBold, fontSize: 18, lineHeight: 22, color: color.inkOnColor },
 });

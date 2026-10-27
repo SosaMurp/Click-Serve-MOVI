@@ -16,7 +16,7 @@ export function QuoteCard({ cotizacion, extras = [], total, title = 'Cotización
         <View key={c.id_concepto} style={styles.item}>
           <View style={styles.flex}>
             <Text variant="body">{c.descripcion}</Text>
-            <Text variant="caption" tone={c.tipo === 'EXTRA' ? 'chrome' : 'muted'}>{TIPO[c.tipo]}</Text>
+            <Text variant="caption" tone={c.tipo === 'EXTRA' ? 'warning' : 'muted'}>{TIPO[c.tipo]}</Text>
           </View>
           <Money value={c.monto} size="sm" />
         </View>

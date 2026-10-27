@@ -31,13 +31,13 @@ export function DateField({ label, value, onChange, min, max, error, helper, ini
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${value ? formatDate(value) : 'sin seleccionar'}`}
         onPress={() => setOpen(true)}
-        style={[styles.field, { borderColor: error ? color.bermellon : color.lineStrong, borderWidth: error ? 2 : 1.5 }]}
+        style={[styles.field, { borderColor: error ? color.danger : 'transparent', borderWidth: 1.5 }]}
       >
-        <Icon name="calendar-month-outline" size={20} color={color.inkMuted} />
+        <Icon name="calendar" size={20} color={color.inkMuted} />
         <Text variant="body" tone={value ? 'default' : 'muted'} style={styles.flex}>{value ? formatDate(value) : 'Selecciona una fecha'}</Text>
         <Icon name="chevron-down" size={22} color={color.inkMuted} />
       </Pressable>
-      <Text variant="caption" tone={error ? 'bermellon' : 'muted'} style={styles.fieldBelow}>{error || helper || ' '}</Text>
+      <Text variant="caption" tone={error ? 'danger' : 'muted'} style={styles.fieldBelow}>{error || helper || ' '}</Text>
       <Sheet visible={open} onClose={() => setOpen(false)} title={label}>
         <Calendar value={value} min={min} max={max} initialYear={initialYear} onPick={(iso) => { onChange(iso); setOpen(false); }} />
       </Sheet>
@@ -76,7 +76,7 @@ export function Calendar({ value, min, max, onPick, initialYear }: { value: stri
       <View style={styles.years}>
         {years.map((y) => (
           <Pressable key={y} accessibilityRole="button" onPress={() => { setCursor((c) => ({ ...c, y })); setYearMode(false); }} style={[styles.year, y === cursor.y && styles.yearOn]}>
-            <Text variant="label" style={{ color: y === cursor.y ? color.inkOnColor : color.ink }}>{y}</Text>
+            <Text variant="label" style={{ color: color.ink }}>{y}</Text>
           </Pressable>
         ))}
       </View>
@@ -88,7 +88,7 @@ export function Calendar({ value, min, max, onPick, initialYear }: { value: stri
       <View style={styles.calHeader}>
         <Pressable accessibilityRole="button" accessibilityLabel="Elegir año" onPress={() => setYearMode(true)} style={styles.monthBtn}>
           <Text variant="subtitle">{MONTHS[cursor.m]} {cursor.y}</Text>
-          <Icon name="menu-down" size={22} color={color.inkSoft} />
+          <Icon name="chevron-down" size={22} color={color.inkSoft} />
         </Pressable>
         <IconButton icon="chevron-left" label="Mes anterior" onPress={() => shift(-1)} />
         <IconButton icon="chevron-right" label="Mes siguiente" onPress={() => shift(1)} />
@@ -110,7 +110,7 @@ export function Calendar({ value, min, max, onPick, initialYear }: { value: stri
               onPress={() => onPick(iso)}
               style={[styles.cell, on && styles.cellOn]}
             >
-              <Text variant="label" style={{ color: on ? color.inkOnColor : off ? color.lineStrong : color.ink }}>{d}</Text>
+              <Text variant="label" style={{ color: on ? color.ink : off ? color.lineStrong : color.ink }}>{d}</Text>
             </Pressable>
           );
         })}
@@ -127,17 +127,17 @@ export function TimeField({ label, value, onChange, error }: { label: string; va
   return (
     <View style={styles.fieldWrap}>
       <Text variant="label" tone="soft" style={styles.fieldLabel}>{label}</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value ? formatTime12(value) : 'sin seleccionar'}`} onPress={() => setOpen(true)} style={[styles.field, { borderColor: error ? color.bermellon : color.lineStrong }]}>
-        <Icon name="clock-outline" size={20} color={color.inkMuted} />
+      <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value ? formatTime12(value) : 'sin seleccionar'}`} onPress={() => setOpen(true)} style={[styles.field, { borderColor: error ? color.danger : 'transparent', borderWidth: 1.5 }]}>
+        <Icon name="clock" size={20} color={color.inkMuted} />
         <Text variant="body" tone={value ? 'default' : 'muted'} style={styles.flex}>{value ? formatTime12(value) : 'Selecciona una hora'}</Text>
         <Icon name="chevron-down" size={22} color={color.inkMuted} />
       </Pressable>
-      <Text variant="caption" tone={error ? 'bermellon' : 'muted'} style={styles.fieldBelow}>{error || ' '}</Text>
+      <Text variant="caption" tone={error ? 'danger' : 'muted'} style={styles.fieldBelow}>{error || ' '}</Text>
       <Sheet visible={open} onClose={() => setOpen(false)} title={label}>
         <View style={styles.slots}>
           {SLOTS.map((s) => (
             <Pressable key={s} accessibilityRole="button" onPress={() => { onChange(s); setOpen(false); }} style={[styles.slot, value === s && styles.slotOn]}>
-              <Text variant="label" style={{ color: value === s ? color.inkOnColor : color.ink }}>{formatTime12(s)}</Text>
+              <Text variant="label" style={{ color: color.ink }}>{formatTime12(s)}</Text>
             </Pressable>
           ))}
         </View>
@@ -156,13 +156,13 @@ export function Folio({ value, label = 'Folio' }: { value: string; label?: strin
     <Pressable accessibilityRole="button" accessibilityLabel={`${label} ${value}. Copiar`} onPress={copy} style={styles.folio} hitSlop={8}>
       <Text variant="caption" tone="muted">{label}</Text>
       <Text variant="label" tabular selectable>{value}</Text>
-      <Icon name="content-copy" size={14} color={color.inkMuted} />
+      <Icon name="copy" size={14} color={color.inkMuted} />
     </Pressable>
   );
 }
 
 // ───────── Monto (formato del servidor, sin aritmética) ─────────
-export function Money({ value, size = 'md', tone = 'default', suffix }: { value: string | number | null | undefined; size?: 'sm' | 'md' | 'lg' | 'xl'; tone?: 'default' | 'verde' | 'cobalt' | 'onColor'; suffix?: boolean }) {
+export function Money({ value, size = 'md', tone = 'default', suffix }: { value: string | number | null | undefined; size?: 'sm' | 'md' | 'lg' | 'xl'; tone?: 'default' | 'success' | 'brand' | 'onColor'; suffix?: boolean }) {
   const variant = size === 'xl' ? 'display' : size === 'lg' ? 'headline' : size === 'md' ? 'title' : 'label';
   return <Text variant={variant} tone={tone} tabular>{formatMoney(value, { currency: suffix })}</Text>;
 }
@@ -172,19 +172,19 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   fieldWrap: { marginBottom: space.md },
   fieldLabel: { marginBottom: space.xs },
-  field: { minHeight: 52, borderRadius: radius.sm, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, backgroundColor: color.surface },
+  field: { minHeight: 54, borderRadius: radius.md, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: color.surfaceSunk },
   fieldBelow: { marginTop: 4, minHeight: 18 },
   calHeader: { flexDirection: 'row', alignItems: 'center' },
   monthBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: touch.min },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   weekCell: { width: `${100 / 7}%`, paddingVertical: space.xs },
   cell: { width: `${100 / 7}%`, height: touch.min, alignItems: 'center', justifyContent: 'center', borderRadius: radius.full },
-  cellOn: { backgroundColor: color.cobalt },
+  cellOn: { backgroundColor: color.accent },
   years: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingBottom: space.md },
-  year: { width: '22%', height: touch.min, alignItems: 'center', justifyContent: 'center', borderRadius: radius.full, borderWidth: 1, borderColor: color.line },
-  yearOn: { backgroundColor: color.cobalt, borderColor: color.cobalt },
+  year: { width: '22%', height: touch.min, alignItems: 'center', justifyContent: 'center', borderRadius: radius.full, backgroundColor: color.surfaceSunk },
+  yearOn: { backgroundColor: color.accent },
   slots: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingBottom: space.md },
-  slot: { width: '31%', height: touch.min, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm, borderWidth: 1.5, borderColor: color.lineStrong },
-  slotOn: { backgroundColor: color.cobalt, borderColor: color.cobalt },
+  slot: { width: '31%', height: touch.min, alignItems: 'center', justifyContent: 'center', borderRadius: radius.full, backgroundColor: color.surfaceSunk },
+  slotOn: { backgroundColor: color.accent },
   folio: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32, alignSelf: 'flex-start' },
 });

@@ -2,10 +2,10 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Switch, View, ViewStyle } from 'react-native';
 import { Icon, IconName } from './Icon';
 import { Text } from './Text';
-import { color, font, radius, space, touch } from './tokens';
+import { color, elevation, font, radius, space, touch } from './tokens';
 import { initials } from '../lib/format';
 
-// ───────── Chip de filtro / selección (Material 3) ─────────
+// ───────── Chip en píldora: el seleccionado se rellena con el naranja de acento ─────────
 type ChipProps = { label: string; selected?: boolean; onPress?: () => void; icon?: IconName; disabled?: boolean };
 
 export function Chip({ label, selected, onPress, icon, disabled }: ChipProps) {
@@ -16,37 +16,28 @@ export function Chip({ label, selected, onPress, icon, disabled }: ChipProps) {
       onPress={onPress}
       disabled={disabled}
       hitSlop={6}
-      style={({ pressed }) => [
-        styles.chip,
-        selected ? styles.chipOn : null,
-        pressed && !selected ? { backgroundColor: color.surfaceSunk } : null,
-        disabled ? { opacity: 0.45 } : null,
-      ]}
+      style={({ pressed }) => [styles.chip, selected ? styles.chipOn : null, pressed && !selected ? { backgroundColor: color.surfaceSunk } : null, disabled ? { opacity: 0.45 } : null]}
     >
-      {selected ? <Icon name="check" size={16} color={color.cobaltInk} /> : icon ? <Icon name={icon} size={16} color={color.inkSoft} /> : null}
-      <Text variant="label" style={{ color: selected ? color.cobaltInk : color.inkSoft, fontSize: 14 }}>{label}</Text>
+      {icon ? <Icon name={icon} size={15} color={selected ? color.ink : color.inkSoft} /> : null}
+      <Text variant="label" style={{ color: selected ? color.ink : color.inkSoft, fontSize: 14 }}>{label}</Text>
     </Pressable>
   );
 }
 
-// ───────── Botones segmentados (Material 3) ─────────
-type Option<T extends string> = { value: T; label: string; icon?: IconName };
+// ───────── Pestañas en píldora ("Todas / En curso / Historial") ─────────
+type Option<T extends string> = { value: T; label: string; icon?: IconName; count?: number };
 
 export function Segmented<T extends string>({ options, value, onChange }: { options: Option<T>[]; value: T; onChange: (v: T) => void }) {
   return (
-    <View style={styles.segment} accessibilityRole="radiogroup">
-      {options.map((o, i) => {
+    <View style={styles.segment} accessibilityRole="tablist">
+      {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable
-            key={o.value}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: on }}
-            onPress={() => onChange(o.value)}
-            style={[styles.segItem, i > 0 && styles.segDivider, on && styles.segOn]}
-          >
-            {on ? <Icon name="check" size={18} color={color.cobaltInk} /> : o.icon ? <Icon name={o.icon} size={18} color={color.inkSoft} /> : null}
-            <Text variant="label" style={{ color: on ? color.cobaltInk : color.inkSoft }}>{o.label}</Text>
+          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={[styles.segItem, on && styles.segOn]}>
+            {o.icon ? <Icon name={o.icon} size={16} color={on ? color.ink : color.inkMuted} /> : null}
+            <Text variant="label" style={{ color: on ? color.ink : color.inkMuted, fontSize: 14 }} numberOfLines={1}>
+              {o.label}{o.count !== undefined ? ` ${o.count}` : ''}
+            </Text>
           </Pressable>
         );
       })}
@@ -57,13 +48,7 @@ export function Segmented<T extends string>({ options, value, onChange }: { opti
 // ───────── Interruptor con etiqueta ─────────
 export function SwitchRow({ label, description, value, onChange, disabled }: { label: string; description?: string; value: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <Pressable
-      accessibilityRole="switch"
-      accessibilityState={{ checked: value, disabled: !!disabled }}
-      accessibilityLabel={label}
-      onPress={() => !disabled && onChange(!value)}
-      style={styles.switchRow}
-    >
+    <Pressable accessibilityRole="switch" accessibilityState={{ checked: value, disabled: !!disabled }} accessibilityLabel={label} onPress={() => !disabled && onChange(!value)} style={styles.switchRow}>
       <View style={styles.flex}>
         <Text variant="subtitle">{label}</Text>
         {description ? <Text variant="bodySm" tone="muted">{description}</Text> : null}
@@ -72,7 +57,7 @@ export function SwitchRow({ label, description, value, onChange, disabled }: { l
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        trackColor={{ false: color.lineStrong, true: color.cobalt }}
+        trackColor={{ false: color.lineStrong, true: color.brand }}
         thumbColor={color.surface}
         {...({ activeThumbColor: color.surface } as object)}
       />
@@ -85,22 +70,25 @@ export function Checkbox({ checked, onChange, children, error }: { checked: bool
   return (
     <View>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={() => onChange(!checked)} style={styles.checkRow}>
-        <Icon name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'} size={26} color={checked ? color.cobalt : error ? color.bermellon : color.inkSoft} />
+        <View style={[styles.box, checked && styles.boxOn, error && !checked ? { borderColor: color.danger } : null]}>
+          {checked ? <Icon name="check" size={16} color={color.inkOnColor} /> : null}
+        </View>
         <View style={styles.flex}>{children}</View>
       </Pressable>
-      {error ? <Text variant="caption" tone="bermellon" style={{ marginLeft: 38 }}>{error}</Text> : null}
+      {error ? <Text variant="caption" tone="danger" style={{ marginLeft: 36 }}>{error}</Text> : null}
     </View>
   );
 }
 
-// ───────── Avatar ─────────
-export function Avatar({ uri, nombre, apellido, size = 44 }: { uri?: string | null; nombre?: string | null; apellido?: string | null; size?: number }) {
+// ───────── Avatar circular ─────────
+export function Avatar({ uri, nombre, apellido, size = 44, ring }: { uri?: string | null; nombre?: string | null; apellido?: string | null; size?: number; ring?: boolean }) {
+  const ringStyle = ring ? { borderWidth: 4, borderColor: color.surface } : null;
   if (uri) {
-    return <Image source={{ uri }} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color.groundAlt }} accessibilityLabel={`Foto de ${nombre || 'usuario'}`} />;
+    return <Image source={{ uri }} style={[{ width: size, height: size, borderRadius: size / 2, backgroundColor: color.groundAlt }, ringStyle]} accessibilityLabel={`Foto de ${nombre || 'usuario'}`} />;
   }
   return (
-    <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]} accessibilityLabel={`Iniciales de ${nombre || 'usuario'}`}>
-      <Text style={{ fontFamily: font.sign, fontSize: size * 0.36, lineHeight: size * 0.44, color: color.cobaltInk }}>{initials(nombre, apellido)}</Text>
+    <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }, ringStyle]} accessibilityLabel={`Iniciales de ${nombre || 'usuario'}`}>
+      <Text style={{ fontFamily: font.heading, fontSize: size * 0.38, lineHeight: size * 0.46, color: color.brandInk }}>{initials(nombre, apellido)}</Text>
     </View>
   );
 }
@@ -109,7 +97,7 @@ export function Avatar({ uri, nombre, apellido, size = 44 }: { uri?: string | nu
 export function EmptyState({ icon, title, body, action }: { icon: IconName; title: string; body?: string; action?: React.ReactNode }) {
   return (
     <View style={styles.empty}>
-      <View style={styles.emptyIcon}><Icon name={icon} size={30} color={color.cobaltInk} /></View>
+      <View style={styles.emptyIcon}><Icon name={icon} size={28} color={color.brandInk} /></View>
       <Text variant="title" align="center">{title}</Text>
       {body ? <Text variant="body" tone="muted" align="center" style={styles.emptyBody}>{body}</Text> : null}
       {action ? <View style={styles.emptyAction}>{action}</View> : null}
@@ -117,20 +105,20 @@ export function EmptyState({ icon, title, body, action }: { icon: IconName; titl
   );
 }
 
-// ───────── Aviso en línea ─────────
+// ───────── Aviso en línea (tarjeta pastel) ─────────
 type BannerTone = 'info' | 'warning' | 'error' | 'success';
 const BANNER: Record<BannerTone, { bg: string; fg: string; icon: IconName }> = {
-  info: { bg: color.cobaltSoft, fg: color.cobaltInk, icon: 'information-outline' },
-  warning: { bg: color.chromeSoft, fg: color.chromeInk, icon: 'alert-outline' },
-  error: { bg: color.bermellonSoft, fg: color.bermellonInk, icon: 'alert-circle-outline' },
-  success: { bg: color.verdeSoft, fg: color.verdeInk, icon: 'check-circle-outline' },
+  info: { bg: color.brandSoft, fg: color.brandInk, icon: 'info' },
+  warning: { bg: color.warningSoft, fg: color.warningInk, icon: 'alert-triangle' },
+  error: { bg: color.dangerSoft, fg: color.dangerInk, icon: 'alert-circle' },
+  success: { bg: color.successSoft, fg: color.successInk, icon: 'check-circle' },
 };
 
 export function Banner({ tone = 'info', title, body, action, style }: { tone?: BannerTone; title: string; body?: string; action?: React.ReactNode; style?: ViewStyle }) {
   const b = BANNER[tone];
   return (
     <View style={[styles.banner, { backgroundColor: b.bg }, style]} accessibilityRole="summary">
-      <Icon name={b.icon} size={22} color={b.fg} />
+      <Icon name={b.icon} size={20} color={b.fg} />
       <View style={styles.flex}>
         <Text variant="subtitle" style={{ color: b.fg }}>{title}</Text>
         {body ? <Text variant="bodySm" style={{ color: b.fg }}>{body}</Text> : null}
@@ -145,11 +133,11 @@ export function RatingStars({ value, onChange, size = 28, label = 'Calificación
   return (
     <View style={styles.stars} accessibilityRole={onChange ? 'adjustable' : 'text'} accessibilityLabel={`${label}: ${value} de 5`}>
       {[1, 2, 3, 4, 5].map((n) => {
-        const icon = value >= n ? 'star' : value >= n - 0.5 ? 'star-half-full' : 'star-outline';
-        const star = <Icon name={icon} size={size} color={value >= n - 0.5 ? color.chromeShade : color.lineStrong} />;
+        const on = value >= n - 0.25;
+        const star = <Icon name="star" size={size} color={on ? color.warning : color.lineStrong} />;
         if (!onChange) return <View key={n}>{star}</View>;
         return (
-          <Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n} estrella${n > 1 ? 's' : ''}`} onPress={() => onChange(n)} style={styles.starBtn}>
+          <Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n} estrella${n > 1 ? 's' : ''}`} accessibilityState={{ selected: value === n }} onPress={() => onChange(n)} style={styles.starBtn}>
             {star}
           </Pressable>
         );
@@ -158,25 +146,34 @@ export function RatingStars({ value, onChange, size = 28, label = 'Calificación
   );
 }
 
+// ───────── Cajita de métrica blanca (dentro de bloques pastel) ─────────
+export function MetricBox({ value, label, tone = 'default' }: { value: string | number; label: string; tone?: 'default' | 'brand' }) {
+  return (
+    <View style={styles.metric} accessibilityLabel={`${label}: ${value}`}>
+      <Text variant="number" tone={tone === 'brand' ? 'brand' : 'default'} tabular numberOfLines={1} adjustsFontSizeToFit>{String(value)}</Text>
+      <Text variant="caption" tone="muted" numberOfLines={1}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  chip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: radius.sm,
-    borderWidth: 1.5, borderColor: color.lineStrong, backgroundColor: color.surface,
-  },
-  chipOn: { backgroundColor: color.cobaltSoft, borderColor: color.cobaltSoft },
-  segment: { flexDirection: 'row', borderWidth: 1.5, borderColor: color.lineStrong, borderRadius: radius.full, overflow: 'hidden' },
-  segItem: { flex: 1, minHeight: touch.min, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: space.sm },
-  segDivider: { borderLeftWidth: 1.5, borderLeftColor: color.lineStrong },
-  segOn: { backgroundColor: color.cobaltSoft },
-  checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md, minHeight: touch.min, paddingVertical: space.sm },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 16, borderRadius: radius.full, backgroundColor: color.surface, borderWidth: 1, borderColor: color.line },
+  chipOn: { backgroundColor: color.accent, borderColor: color.accent },
+  segment: { flexDirection: 'row', backgroundColor: color.surface, borderRadius: radius.full, padding: 4, gap: 4, ...elevation[1] },
+  segItem: { flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: space.sm, borderRadius: radius.full },
+  segOn: { backgroundColor: color.accent },
   switchRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
-  avatar: { backgroundColor: color.cobaltSoft, alignItems: 'center', justifyContent: 'center' },
+  checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md, minHeight: touch.min, paddingVertical: space.sm },
+  box: { width: 24, height: 24, borderRadius: 8, borderWidth: 2, borderColor: color.lineStrong, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  boxOn: { backgroundColor: color.brand, borderColor: color.brand },
+  avatar: { backgroundColor: color.brandSoft, alignItems: 'center', justifyContent: 'center' },
   empty: { alignItems: 'center', paddingVertical: space.xxl, paddingHorizontal: space.xl },
-  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: color.cobaltSoft, alignItems: 'center', justifyContent: 'center', marginBottom: space.lg },
+  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: color.brandSoft, alignItems: 'center', justifyContent: 'center', marginBottom: space.lg },
   emptyBody: { marginTop: space.xs, maxWidth: 360 },
   emptyAction: { marginTop: space.lg },
   banner: { flexDirection: 'row', gap: space.md, padding: space.lg, borderRadius: radius.md },
   stars: { flexDirection: 'row', alignItems: 'center' },
   starBtn: { width: touch.min, height: touch.min, alignItems: 'center', justifyContent: 'center' },
+  metric: { flex: 1, backgroundColor: color.surface, borderRadius: radius.md, paddingVertical: space.md, paddingHorizontal: space.sm, alignItems: 'center' },
 });

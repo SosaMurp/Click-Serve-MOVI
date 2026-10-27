@@ -6,10 +6,10 @@ import { StatusBar } from 'expo-status-bar';
 import { IconButton } from './Button';
 import { IconName } from './Icon';
 import { Text } from './Text';
-import { color, space } from './tokens';
+import { color, elevation, space } from './tokens';
 import { dialog } from '../ui/dialog';
 
-export type AppBarAction = { icon: IconName; label: string; onPress: () => void; badge?: number };
+export type AppBarAction = { icon: IconName; label: string; onPress: () => void; badge?: number | boolean };
 
 type Props = {
   title: string;
@@ -23,7 +23,7 @@ type Props = {
   fallbackHref?: string;
 };
 
-// Barra superior de la pantalla: esmalte cobalto con el título en letra de rótulo.
+// Encabezado simple sobre el fondo claro: botón circular para regresar, título centrado y acciones circulares.
 export function AppBar({ title, subtitle, back = true, onBack, confirmDiscard, actions = [], right, fallbackHref = '/' }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -45,27 +45,43 @@ export function AppBar({ title, subtitle, back = true, onBack, confirmDiscard, a
   };
 
   return (
-    <View style={[styles.bar, { paddingTop: insets.top }]}>
-      <StatusBar style="light" />
-      <View style={styles.row}>
-        {back ? <IconButton icon="arrow-left" label="Regresar" tint={color.inkOnColor} onPress={goBack} /> : <View style={styles.spacer} />}
+    <View style={[styles.bar, { paddingTop: insets.top + space.xs }]}>
+      <StatusBar style="dark" />
+      <View style={styles.inner}>
+        {back ? (
+          <View style={styles.side}>
+            <CircleIcon icon="arrow-left" label="Regresar" onPress={goBack} />
+          </View>
+        ) : null}
         <View style={styles.titles}>
-          <Text variant="appbar" tone="onColor" numberOfLines={1} accessibilityRole="header">{title}</Text>
-          {subtitle ? <Text variant="caption" style={styles.subtitle} numberOfLines={1}>{subtitle}</Text> : null}
+          <Text variant={back ? 'title' : 'headline'} numberOfLines={1} align={back ? 'center' : 'left'} accessibilityRole="header">{title}</Text>
+          {subtitle ? <Text variant="caption" tone="muted" numberOfLines={1} align={back ? 'center' : 'left'}>{subtitle}</Text> : null}
         </View>
-        {actions.map((a) => (
-          <IconButton key={a.label} icon={a.icon} label={a.label} tint={color.inkOnColor} onPress={a.onPress} badge={a.badge} />
-        ))}
-        {right}
+        <View style={[styles.side, styles.sideRight]}>
+          {actions.map((a) => <CircleIcon key={a.label} icon={a.icon} label={a.label} onPress={a.onPress} badge={a.badge} />)}
+          {right}
+          {back && !actions.length && !right ? <View style={styles.placeholder} /> : null}
+        </View>
       </View>
     </View>
   );
 }
 
+// Botón circular blanco con sombra casi invisible (encabezados).
+export function CircleIcon({ icon, label, onPress, badge }: { icon: IconName; label: string; onPress?: () => void; badge?: number | boolean }) {
+  return (
+    <View style={styles.circle}>
+      <IconButton icon={icon} label={label} onPress={onPress} background={color.surface} badge={badge} size={20} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  bar: { backgroundColor: color.cobalt },
-  row: { minHeight: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.xs, gap: space.xs },
-  spacer: { width: space.md },
-  titles: { flex: 1, paddingHorizontal: space.xs },
-  subtitle: { color: '#C9D3F5', marginTop: 1 },
+  bar: { backgroundColor: color.ground, alignItems: 'center' },
+  inner: { width: '100%', maxWidth: 640, minHeight: 60, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, gap: space.sm },
+  side: { minWidth: 48, flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  sideRight: { justifyContent: 'flex-end' },
+  titles: { flex: 1 },
+  placeholder: { width: 48 },
+  circle: { borderRadius: 24, ...elevation[1] },
 });

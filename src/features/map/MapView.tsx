@@ -53,7 +53,7 @@ export function MapView({ center, zoom, markers = [], pickable, fit, height = 24
       />
       {recenterTo ? (
         <View style={styles.recenter}>
-          <IconButton icon="crosshairs-gps" label="Centrar en mi ubicación" background={color.surface} tint={color.cobaltInk} onPress={() => apply({ type: 'center', lat: recenterTo.lat, lng: recenterTo.lng, zoom: 16 })} />
+          <IconButton icon="crosshair" label="Centrar en mi ubicación" background={color.surface} tint={color.brandInk} onPress={() => apply({ type: 'center', lat: recenterTo.lat, lng: recenterTo.lng, zoom: 16 })} />
         </View>
       ) : null}
     </View>

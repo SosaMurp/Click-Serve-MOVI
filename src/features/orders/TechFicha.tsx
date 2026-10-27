@@ -28,8 +28,8 @@ export function TechFicha({ nombre, apellido, foto_url, calificacion, resenas, t
       <View style={styles.flex}>
         <View style={styles.nameRow}>
           <Text variant="subtitle" numberOfLines={1} style={styles.name}>{nombre} {apellido}</Text>
-          <Badge icon="shield-check" label="Identidad verificada" tone="verde" />
-          {verificado_sep ? <Badge icon="school-outline" label="Cédula SEP" tone="cobalt" /> : null}
+          <Badge icon="shield" label="Identidad verificada" tone="success" />
+          {verificado_sep ? <Badge icon="award" label="Cédula SEP" tone="brand" /> : null}
         </View>
         <View style={styles.line}>
           {rating ? <RatingStars value={rating} size={14} /> : null}
@@ -39,7 +39,7 @@ export function TechFicha({ nombre, apellido, foto_url, calificacion, resenas, t
         </View>
         {distancia_km != null ? (
           <View style={styles.line}>
-            <Icon name="map-marker-distance" size={14} color={color.inkMuted} />
+            <Icon name="navigation" size={14} color={color.inkMuted} />
             <Text variant="caption" tone="muted">{formatDistance(distancia_km)}{eta_min ? ` · llega en ~${eta_min} min` : ''}</Text>
           </View>
         ) : null}
@@ -50,10 +50,10 @@ export function TechFicha({ nombre, apellido, foto_url, calificacion, resenas, t
   );
 }
 
-function Badge({ icon, label, tone }: { icon: IconName; label: string; tone: 'verde' | 'cobalt' }) {
+function Badge({ icon, label, tone }: { icon: IconName; label: string; tone: 'success' | 'brand' }) {
   return (
-    <View accessibilityLabel={label} style={[styles.badge, { backgroundColor: tone === 'verde' ? color.verdeSoft : color.cobaltSoft }]}>
-      <Icon name={icon} size={13} color={tone === 'verde' ? color.verdeInk : color.cobaltInk} />
+    <View accessibilityLabel={label} style={[styles.badge, { backgroundColor: tone === 'success' ? color.successSoft : color.brandSoft }]}>
+      <Icon name={icon} size={13} color={tone === 'success' ? color.successInk : color.brandInk} />
     </View>
   );
 }

@@ -16,7 +16,7 @@ export function Gallery({ items, size = 88 }: { items: { url: string; label?: st
         {items.map((it, i) => (
           <Pressable key={it.url} accessibilityRole="imagebutton" accessibilityLabel={`Ver foto ${i + 1}${it.label ? `: ${it.label}` : ''}`} onPress={() => setOpen(i)} style={[styles.thumb, { width: size, height: size }]}>
             <Image source={{ uri: fileUrl(it.url) || undefined }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-            <View style={styles.zoom}><Icon name="magnify-plus-outline" size={16} color={color.inkOnColor} /></View>
+            <View style={styles.zoom}><Icon name="zoom-in" size={16} color={color.inkOnColor} /></View>
           </Pressable>
         ))}
       </View>
@@ -24,7 +24,7 @@ export function Gallery({ items, size = 88 }: { items: { url: string; label?: st
         <View style={[styles.viewer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
           <View style={styles.viewerBar}>
             <Text variant="label" tone="onColor" style={styles.flex}>{current?.label || `Foto ${(open ?? 0) + 1} de ${items.length}`}</Text>
-            <IconButton icon="close" label="Cerrar" tint={color.inkOnColor} onPress={() => setOpen(null)} />
+            <IconButton icon="x" label="Cerrar" tint={color.inkOnColor} onPress={() => setOpen(null)} />
           </View>
           {current ? <Image source={{ uri: fileUrl(current.url) || undefined }} style={styles.full} resizeMode="contain" accessibilityLabel={current.label || 'Foto'} /> : null}
           {items.length > 1 ? (

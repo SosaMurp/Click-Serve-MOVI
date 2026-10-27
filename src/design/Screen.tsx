@@ -29,7 +29,7 @@ export function Screen({ children, header, footer, scroll = true, refreshing = f
       style={styles.flex}
       contentContainerStyle={[styles.scrollContent, { paddingBottom: footer ? space.xl : bottom + space.xxl }]}
       keyboardShouldPersistTaps="handled"
-      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[color.cobalt]} tintColor={color.cobalt} /> : undefined}
+      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[color.brand]} tintColor={color.brand} /> : undefined}
     >
       <View style={inner}>{children}</View>
     </ScrollView>

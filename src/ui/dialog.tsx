@@ -126,11 +126,11 @@ export function DialogHost() {
 
 const styles = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: color.scrim, alignItems: 'center', justifyContent: 'center', padding: space.xl },
-  panel: { width: '100%', maxWidth: 420, backgroundColor: color.surface, borderRadius: radius.lg, padding: space.xl, ...elevation[2] },
+  panel: { width: '100%', maxWidth: 420, backgroundColor: color.surface, borderRadius: radius.xl, padding: space.xl, ...elevation[2] },
   title: { marginBottom: space.sm },
   message: { marginBottom: space.lg },
   input: {
-    borderWidth: 1.5, borderColor: color.lineStrong, borderRadius: radius.sm, height: 52, paddingHorizontal: space.md,
+    borderWidth: 1.5, borderColor: color.line, borderRadius: radius.md, height: 54, paddingHorizontal: space.lg, backgroundColor: color.surfaceSunk,
     fontSize: 16, color: color.ink, marginBottom: space.lg,
   },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', flexWrap: 'wrap', gap: space.sm },

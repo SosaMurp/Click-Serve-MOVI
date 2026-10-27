@@ -78,6 +78,21 @@ export async function currentLocation(): Promise<Coords | null> {
   }
 }
 
+// Ubicación sin volver a pedir permiso (latido y ruta del técnico): última conocida o actual.
+export async function quietLocation(): Promise<Coords | null> {
+  try {
+    const perm = await Location.getForegroundPermissionsAsync();
+    if (perm.status !== 'granted') return null;
+    if (Platform.OS !== 'web') {
+      const last = await Location.getLastKnownPositionAsync({ maxAge: 15000 });
+      if (last) return { latitude: last.coords.latitude, longitude: last.coords.longitude };
+    }
+    return currentLocation();
+  } catch {
+    return null;
+  }
+}
+
 export async function addressFromCoords(c: Coords): Promise<string | null> {
   if (Platform.OS === 'web') return null;
   try {

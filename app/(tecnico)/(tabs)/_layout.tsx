@@ -2,10 +2,10 @@ import { Tabs } from 'expo-router';
 import { makeNavigationBar, TabBarProps, TabMeta } from '@/src/design';
 
 const META: TabMeta = {
-  trabajos: { icon: 'briefcase-outline', iconActive: 'briefcase', label: 'Trabajos' },
-  mapa: { icon: 'map-outline', iconActive: 'map', label: 'Mapa' },
-  billetera: { icon: 'wallet-outline', iconActive: 'wallet', label: 'Billetera' },
-  perfil: { icon: 'account-hard-hat-outline', iconActive: 'account-hard-hat', label: 'Perfil' },
+  trabajos: { icon: 'briefcase', iconActive: 'briefcase', label: 'Trabajos' },
+  mapa: { icon: 'map', iconActive: 'map', label: 'Mapa' },
+  billetera: { icon: 'credit-card', iconActive: 'credit-card', label: 'Billetera' },
+  perfil: { icon: 'user', iconActive: 'user', label: 'Perfil' },
 };
 const NavigationBar = makeNavigationBar(META);
 

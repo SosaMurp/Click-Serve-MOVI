@@ -5,36 +5,36 @@ export type EstadoOrden =
   | 'PENDIENTE' | 'ASIGNADA' | 'EN_CAMINO' | 'EN_SITIO' | 'ESPERANDO_APROBACION'
   | 'EN_PROCESO' | 'POR_CONFIRMAR' | 'FINALIZADA' | 'SUSPENDIDA' | 'CANCELADA';
 
-type Tone = 'cobalt' | 'chrome' | 'verde' | 'bermellon' | 'carbon' | 'neutral';
+type Tone = 'brand' | 'accent' | 'success' | 'warning' | 'danger' | 'navy' | 'neutral';
 type Info = { label: string; tone: Tone; icon: string; hint: string };
 
 const CLIENTE: Record<EstadoOrden, Info> = {
-  PENDIENTE: { label: 'Buscando técnico', tone: 'chrome', icon: 'magnify', hint: 'Avisamos a técnicos cercanos de la especialidad.' },
-  ASIGNADA: { label: 'Técnico asignado', tone: 'cobalt', icon: 'account-check-outline', hint: 'Tu técnico confirmó el servicio.' },
-  EN_CAMINO: { label: 'En camino', tone: 'cobalt', icon: 'navigation-variant-outline', hint: 'Sigue su ubicación en el mapa.' },
-  EN_SITIO: { label: 'En tu domicilio', tone: 'cobalt', icon: 'home-account', hint: 'El técnico está revisando la falla.' },
-  ESPERANDO_APROBACION: { label: 'Aprueba la cotización', tone: 'chrome', icon: 'file-document-edit-outline', hint: 'Revisa los conceptos antes de que empiece el trabajo.' },
-  EN_PROCESO: { label: 'Trabajando', tone: 'cobalt', icon: 'hammer-wrench', hint: 'El técnico está haciendo el trabajo.' },
-  POR_CONFIRMAR: { label: 'Confirma y paga', tone: 'chrome', icon: 'check-decagram-outline', hint: 'Revisa la evidencia y confirma que quedó.' },
-  FINALIZADA: { label: 'Pagado', tone: 'verde', icon: 'check-circle-outline', hint: 'Servicio confirmado. Tienes 90 días de garantía.' },
-  SUSPENDIDA: { label: 'Suspendida', tone: 'bermellon', icon: 'alert-octagon-outline', hint: 'Hay un reporte abierto. Elige cómo resolverlo.' },
-  CANCELADA: { label: 'Cancelado', tone: 'carbon', icon: 'close-circle-outline', hint: 'Esta orden se canceló sin cargo.' },
+  PENDIENTE: { label: 'Buscando técnico', tone: 'brand', icon: 'search', hint: 'Avisamos a técnicos cercanos de la especialidad.' },
+  ASIGNADA: { label: 'Técnico asignado', tone: 'brand', icon: 'user-check', hint: 'Tu técnico confirmó el servicio.' },
+  EN_CAMINO: { label: 'En camino', tone: 'brand', icon: 'navigation', hint: 'Sigue su ubicación en el mapa.' },
+  EN_SITIO: { label: 'En tu domicilio', tone: 'brand', icon: 'home', hint: 'El técnico está revisando la falla.' },
+  ESPERANDO_APROBACION: { label: 'Aprueba la cotización', tone: 'warning', icon: 'edit-3', hint: 'Revisa los conceptos antes de que empiece el trabajo.' },
+  EN_PROCESO: { label: 'Trabajando', tone: 'brand', icon: 'tool', hint: 'El técnico está haciendo el trabajo.' },
+  POR_CONFIRMAR: { label: 'Confirma y paga', tone: 'warning', icon: 'award', hint: 'Revisa la evidencia y confirma que quedó.' },
+  FINALIZADA: { label: 'Pagado', tone: 'success', icon: 'check-circle', hint: 'Servicio confirmado. Tienes 90 días de garantía.' },
+  SUSPENDIDA: { label: 'Suspendida', tone: 'danger', icon: 'alert-octagon', hint: 'Hay un reporte abierto. Elige cómo resolverlo.' },
+  CANCELADA: { label: 'Cancelado', tone: 'neutral', icon: 'x-circle', hint: 'Esta orden se canceló sin cargo.' },
 };
 
 const TECNICO: Record<EstadoOrden, Info> = {
   ...CLIENTE,
-  PENDIENTE: { label: 'Nueva', tone: 'chrome', icon: 'bell-ring-outline', hint: 'Acepta o descarta esta solicitud.' },
-  ASIGNADA: { label: 'Asignada', tone: 'cobalt', icon: 'calendar-check-outline', hint: 'Avisa cuando vayas en camino.' },
-  EN_CAMINO: { label: 'En camino', tone: 'cobalt', icon: 'navigation-variant-outline', hint: 'Tu ubicación se comparte con el cliente.' },
-  EN_SITIO: { label: 'En sitio', tone: 'cobalt', icon: 'map-marker-check-outline', hint: 'Revisa la falla y envía la cotización.' },
-  ESPERANDO_APROBACION: { label: 'Cotización enviada', tone: 'chrome', icon: 'timer-sand', hint: 'Esperando que el cliente la apruebe.' },
-  EN_PROCESO: { label: 'En proceso', tone: 'cobalt', icon: 'hammer-wrench', hint: 'Marca tareas y sube evidencia antes de terminar.' },
-  POR_CONFIRMAR: { label: 'Por confirmar', tone: 'chrome', icon: 'timer-sand', hint: 'El cliente debe confirmar y pagar.' },
-  FINALIZADA: { label: 'Cobrado', tone: 'verde', icon: 'cash-check', hint: 'El pago ya está en tu billetera.' },
+  PENDIENTE: { label: 'Nueva', tone: 'accent', icon: 'bell', hint: 'Acepta o descarta esta solicitud.' },
+  ASIGNADA: { label: 'Asignada', tone: 'brand', icon: 'calendar', hint: 'Avisa cuando vayas en camino.' },
+  EN_CAMINO: { label: 'En camino', tone: 'brand', icon: 'navigation', hint: 'Tu ubicación se comparte con el cliente.' },
+  EN_SITIO: { label: 'En sitio', tone: 'brand', icon: 'map-pin', hint: 'Revisa la falla y envía la cotización.' },
+  ESPERANDO_APROBACION: { label: 'Cotización enviada', tone: 'warning', icon: 'clock', hint: 'Esperando que el cliente la apruebe.' },
+  EN_PROCESO: { label: 'En proceso', tone: 'brand', icon: 'tool', hint: 'Marca tareas y sube evidencia antes de terminar.' },
+  POR_CONFIRMAR: { label: 'Por confirmar', tone: 'warning', icon: 'clock', hint: 'El cliente debe confirmar y pagar.' },
+  FINALIZADA: { label: 'Cobrado', tone: 'success', icon: 'dollar-sign', hint: 'El pago ya está en tu billetera.' },
 };
 
 export function estadoInfo(estado: EstadoOrden, rol: 'cliente' | 'tecnico' | string): Info {
-  return (rol === 'tecnico' ? TECNICO : CLIENTE)[estado] || { label: estado, tone: 'neutral', icon: 'help-circle-outline', hint: '' };
+  return (rol === 'tecnico' ? TECNICO : CLIENTE)[estado] || { label: estado, tone: 'neutral', icon: 'help-circle', hint: '' };
 }
 
 export const STEPS: { key: string; label: string }[] = [
@@ -65,11 +65,11 @@ export function isActive(estado: EstadoOrden): boolean {
 }
 
 export const INCIDENCIA_TIPOS: { value: string; label: string; icon: string }[] = [
-  { value: 'NO_SE_PRESENTO', label: 'El técnico no llegó', icon: 'account-off-outline' },
-  { value: 'COBRO_INDEBIDO', label: 'Me quieren cobrar de más', icon: 'cash-remove' },
-  { value: 'MALA_CALIDAD', label: 'El trabajo quedó mal', icon: 'thumb-down-outline' },
-  { value: 'DANOS', label: 'Hubo daños en mi domicilio', icon: 'home-alert-outline' },
-  { value: 'SEGURIDAD', label: 'Me sentí inseguro', icon: 'shield-alert-outline' },
-  { value: 'GARANTIA', label: 'Reclamar garantía', icon: 'shield-check-outline' },
-  { value: 'OTRO', label: 'Otro problema', icon: 'dots-horizontal-circle-outline' },
+  { value: 'NO_SE_PRESENTO', label: 'El técnico no llegó', icon: 'user-x' },
+  { value: 'COBRO_INDEBIDO', label: 'Me quieren cobrar de más', icon: 'x-circle' },
+  { value: 'MALA_CALIDAD', label: 'El trabajo quedó mal', icon: 'thumbs-down' },
+  { value: 'DANOS', label: 'Hubo daños en mi domicilio', icon: 'alert-triangle' },
+  { value: 'SEGURIDAD', label: 'Me sentí inseguro', icon: 'shield-off' },
+  { value: 'GARANTIA', label: 'Reclamar garantía', icon: 'shield' },
+  { value: 'OTRO', label: 'Otro problema', icon: 'more-horizontal' },
 ];

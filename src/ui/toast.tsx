@@ -21,8 +21,8 @@ export const toast = {
   warning(message: string) { push?.({ message, tone: 'warning' }); },
 };
 
-const ICONS: Record<Tone, IconName> = { neutral: 'information-outline', success: 'check-circle-outline', error: 'alert-circle-outline', warning: 'alert-outline' };
-const ICON_COLOR: Record<Tone, string> = { neutral: '#C9D3F5', success: '#8FE0AE', error: '#FFB0AA', warning: color.chrome };
+const ICONS: Record<Tone, IconName> = { neutral: 'info', success: 'check-circle', error: 'alert-circle', warning: 'alert-triangle' };
+const ICON_COLOR: Record<Tone, string> = { neutral: '#C9D3F5', success: '#8FE0AE', error: '#FFB0AA', warning: color.warning };
 
 export function ToastHost() {
   const insets = useSafeAreaInsets();
@@ -64,7 +64,7 @@ export function ToastHost() {
             onPress={() => { current.action?.onPress(); setCurrent(null); }}
             style={styles.action}
           >
-            <Text variant="label" style={{ color: color.chrome }}>{current.action.label}</Text>
+            <Text variant="label" style={{ color: color.accent }}>{current.action.label}</Text>
           </Pressable>
         ) : null}
       </Animated.View>
@@ -75,7 +75,7 @@ export function ToastHost() {
 const styles = StyleSheet.create({
   wrap: { position: 'absolute', left: space.lg, right: space.lg, alignItems: 'center' },
   bar: {
-    flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: color.carbon, borderRadius: radius.sm,
+    flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: color.navy, borderRadius: radius.full,
     paddingHorizontal: space.lg, paddingVertical: space.md, maxWidth: 560, width: '100%', minHeight: 48,
   },
   text: { flex: 1 },

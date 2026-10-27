@@ -23,18 +23,18 @@ export function OrderCard({ s, rol, onPress, footer }: { s: Solicitud; rol: 'cli
       <Text variant="bodySm" tone="soft" numberOfLines={2} style={styles.desc}>{s.descripcion}</Text>
       <View style={styles.meta}>
         <View style={styles.metaItem}>
-          <Icon name="calendar-blank-outline" size={16} color={color.inkMuted} />
+          <Icon name="calendar" size={16} color={color.inkMuted} />
           <Text variant="caption" tone="muted">{when}</Text>
         </View>
         {who ? (
           <View style={styles.metaItem}>
-            <Icon name={rol === 'cliente' ? 'account-hard-hat-outline' : 'account-outline'} size={16} color={color.inkMuted} />
+            <Icon name={rol === 'cliente' ? 'tool' : 'user'} size={16} color={color.inkMuted} />
             <Text variant="caption" tone="muted" numberOfLines={1}>{who}</Text>
           </View>
         ) : null}
         {s.distancia_km != null ? (
           <View style={styles.metaItem}>
-            <Icon name="map-marker-distance" size={16} color={color.inkMuted} />
+            <Icon name="navigation" size={16} color={color.inkMuted} />
             <Text variant="caption" tone="muted">{formatDistance(s.distancia_km)}</Text>
           </View>
         ) : null}

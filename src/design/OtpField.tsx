@@ -39,7 +39,7 @@ export function OtpField({ length = 6, onComplete, disabled, error, resetKey }: 
               key={i}
               style={[
                 styles.cell,
-                { borderColor: error ? color.bermellon : active ? color.cobalt : code[i] ? color.ink : color.lineStrong, borderWidth: active || error ? 2 : 1.5 },
+                { borderColor: error ? color.danger : active ? color.brand : code[i] ? color.ink : color.lineStrong, borderWidth: active || error ? 2 : 1.5 },
               ]}
             >
               <Text style={styles.digit} tabular>{code[i] || ''}</Text>
@@ -62,15 +62,15 @@ export function OtpField({ length = 6, onComplete, disabled, error, resetKey }: 
           caretHidden
         />
       </Pressable>
-      {error ? <Text variant="caption" tone="bermellon" align="center" style={styles.error} accessibilityLiveRegion="polite">{error}</Text> : null}
+      {error ? <Text variant="caption" tone="danger" align="center" style={styles.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'center', gap: space.sm },
-  cell: { width: 46, height: 56, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface },
-  digit: { fontFamily: font.sign, fontSize: 24, lineHeight: 30, color: color.ink },
+  cell: { width: 46, height: 58, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface },
+  digit: { fontFamily: font.heading, fontSize: 26, lineHeight: 32, color: color.ink },
   hidden: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, opacity: 0.011, color: 'transparent', fontSize: 1 },
   error: { marginTop: space.sm },
 });
