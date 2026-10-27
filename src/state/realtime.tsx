@@ -14,6 +14,7 @@ class RealtimeBus {
   private retry = 0;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private active = false;
+  private connecting = false;
 
   on(event: string, fn: Handler) {
     if (!this.handlers.has(event)) this.handlers.set(event, new Set());
@@ -28,8 +29,15 @@ class RealtimeBus {
 
   async start() {
     this.active = true;
-    if (this.ws && (this.ws.readyState === 0 || this.ws.readyState === 1)) return;
-    const token = await getToken();
+    // connecting cubre el await: dos llamadas seguidas (inicio de sesión y regreso a primer plano) abrirían dos sockets.
+    if (this.connecting || (this.ws && (this.ws.readyState === 0 || this.ws.readyState === 1))) return;
+    this.connecting = true;
+    let token: string | null;
+    try {
+      token = await getToken();
+    } finally {
+      this.connecting = false;
+    }
     if (!token || !this.active || !API_URL) return;
     const url = `${API_URL.replace(/^http/, 'ws')}/ws?token=${encodeURIComponent(token)}`;
     try {
@@ -37,12 +45,17 @@ class RealtimeBus {
       this.ws = ws;
       ws.onopen = () => { this.retry = 0; };
       ws.onmessage = (msg) => {
+        if (this.ws !== ws) return;
         try {
           const parsed = JSON.parse(String(msg.data));
           if (parsed?.event) this.dispatch(parsed.event, parsed.data);
         } catch { /* mensaje inválido */ }
       };
-      ws.onclose = () => { this.ws = null; this.schedule(); };
+      ws.onclose = () => {
+        if (this.ws !== ws) return;
+        this.ws = null;
+        this.schedule();
+      };
       ws.onerror = () => { try { ws.close(); } catch { /* ya cerrado */ } };
     } catch {
       this.schedule();

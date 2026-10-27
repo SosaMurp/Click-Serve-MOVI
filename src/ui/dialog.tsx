@@ -84,8 +84,10 @@ export function DialogHost() {
     };
   }, [next]);
 
+  // Un segundo toque antes de que React vuelva a pintar trae el diálogo anterior en `current`;
+  // si ya no es el vigente se ignora, para no cerrar ni saltar el siguiente de la cola.
   const finish = (value: string) => {
-    if (!current) return;
+    if (!current || currentRef.current !== current) return;
     current.resolve({ value, input });
     next();
   };
