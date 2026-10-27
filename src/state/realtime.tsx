@@ -51,9 +51,11 @@ class RealtimeBus {
           if (parsed?.event) this.dispatch(parsed.event, parsed.data);
         } catch { /* mensaje inválido */ }
       };
-      ws.onclose = () => {
+      ws.onclose = (ev) => {
         if (this.ws !== ws) return;
         this.ws = null;
+        // 4401: el servidor cortó el canal porque la sesión terminó (cerrada, revocada o con otra contraseña).
+        if (ev?.code === 4401) this.dispatch('sesion.terminada', null);
         this.schedule();
       };
       ws.onerror = () => { try { ws.close(); } catch { /* ya cerrado */ } };
@@ -86,7 +88,13 @@ const bus = new RealtimeBus();
 const RealtimeContext = createContext<RealtimeBus>(bus);
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+  const { status, refresh } = useSession();
+  // RF-12/RNF-10: si el servidor avisa que la sesión terminó, se consulta /api/me; su 401 cierra la sesión aquí
+  // al momento, en vez de esperar a la siguiente acción de la persona.
+  useEffect(() => {
+    const off = bus.on('sesion.terminada', () => { refresh(); });
+    return () => { off(); };
+  }, [refresh]);
   useEffect(() => {
     if (status === 'signedIn') bus.start();
     else bus.stop();
