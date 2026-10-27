@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, G, Path, Polygon, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Avatar } from './Controls';
@@ -96,11 +95,6 @@ export function FloatingAction({ title, icon = 'plus', onPress, bottom = 16 }: {
       <Button title={title} icon={icon} onPress={onPress} floating size="lg" />
     </View>
   );
-}
-
-export function useGoTo() {
-  const router = useRouter();
-  return (href: string) => router.push(href as never);
 }
 
 const styles = StyleSheet.create({
