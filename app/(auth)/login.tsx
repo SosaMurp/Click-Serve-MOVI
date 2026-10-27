@@ -7,6 +7,7 @@ import { authApi } from '@/src/api/endpoints';
 import { ApiError, errorMessage } from '@/src/api/client';
 import { useSession } from '@/src/state/session';
 import { isEmail } from '@/src/lib/validators';
+import { handOff } from '@/src/features/auth/handoff';
 
 const PROMISES: { icon: IconName; text: string }[] = [
   { icon: 'credit-card', text: 'Técnicos con INE, rostro y cédula verificados' },
@@ -35,7 +36,8 @@ export default function Login() {
     try {
       const res = await authApi.login(email.trim(), password);
       if (res.requires2FA && res.reto) {
-        router.push({ pathname: '/dos-pasos', params: { reto: res.reto, metodo: res.metodo || 'TOTP', correo: email.trim() } });
+        handOff('reto_2fa', res.reto);
+        router.push({ pathname: '/dos-pasos', params: { metodo: res.metodo || 'TOTP', correo: email.trim() } });
         return;
       }
       if (res.token && res.usuario) {

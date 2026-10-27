@@ -4,6 +4,7 @@ import { CodeScreen } from '@/src/features/auth/CodeScreen';
 import { authApi } from '@/src/api/endpoints';
 import { errorMessage } from '@/src/api/client';
 import { toast } from '@/src/ui/toast';
+import { handOff } from '@/src/features/auth/handoff';
 
 export default function RecuperarCodigo() {
   const { email, canal } = useLocalSearchParams<{ email: string; canal: 'EMAIL' | 'SMS' }>();
@@ -19,7 +20,8 @@ export default function RecuperarCodigo() {
       onCode={async (code) => {
         try {
           const { reset_token } = await authApi.verifyRecovery(String(email), code);
-          router.replace({ pathname: '/nueva-contrasena', params: { email: String(email), token: reset_token } });
+          handOff('reset_token', reset_token);
+          router.replace({ pathname: '/nueva-contrasena', params: { email: String(email) } });
           return null;
         } catch (e) {
           return errorMessage(e);
