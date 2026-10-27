@@ -124,6 +124,8 @@ export type TecnicoRecomendado = {
   bio: string | null;
   distancia_km: number | null;
   eta_min: number | null;
+  latitud_aprox: number | null;
+  longitud_aprox: number | null;
   calificacion: string | null;
   resenas: number;
   trabajos: number;

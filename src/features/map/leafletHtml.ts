@@ -37,17 +37,17 @@ export function leafletHtml(state: MapState): string {
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
-  html, body, #map { height: 100%; margin: 0; background: #E8EBF1; font-family: system-ui, -apple-system, Roboto, sans-serif; }
+  html, body, #map { height: 100%; margin: 0; background: #EEF1F5; font-family: system-ui, -apple-system, Roboto, sans-serif; }
   .leaflet-control-attribution { font-size: 10px; }
-  .pin { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px;
-         letter-spacing: .3px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.25); transform: translate(-50%, -100%); }
+  .leaflet-tile-pane { filter: saturate(.45) brightness(1.05) contrast(.95); }
+  .pin { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 999px; font-weight: 600; font-size: 12px;
+         white-space: nowrap; box-shadow: 0 4px 12px rgba(15,30,46,.22); transform: translate(-50%, -100%); position: relative; }
   .pin::after { content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; }
-  .pin { position: relative; }
-  .pin-cliente, .pin-punto { background: #1D3FBF; color: #fff; } .pin-cliente::after, .pin-punto::after { border-top-color: #1D3FBF; }
-  .pin-tecnico { background: #FFC21A; color: #16181D; } .pin-tecnico::after { border-top-color: #FFC21A; }
-  .pin-solicitud { background: #FFFFFF; color: #16181D; border: 2px solid #16181D; } .pin-solicitud::after { border-top-color: #16181D; }
-  .pin-propuesta { background: #D7261E; color: #fff; } .pin-propuesta::after { border-top-color: #D7261E; }
-  .yo { width: 18px; height: 18px; border-radius: 50%; background: #1D3FBF; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(29,63,191,.25); transform: translate(-50%, -50%); }
+  .pin-cliente, .pin-punto { background: #0B4F85; color: #fff; } .pin-cliente::after, .pin-punto::after { border-top-color: #0B4F85; }
+  .pin-tecnico { background: #0F1E2E; color: #fff; } .pin-tecnico::after { border-top-color: #0F1E2E; }
+  .pin-solicitud { background: #FFFFFF; color: #141A23; border: 2px solid #0F1E2E; } .pin-solicitud::after { border-top-color: #0F1E2E; }
+  .pin-propuesta { background: #E8801F; color: #141A23; } .pin-propuesta::after { border-top-color: #E8801F; }
+  .yo { width: 18px; height: 18px; border-radius: 50%; background: #0B4F85; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(11,79,133,.22); transform: translate(-50%, -50%); }
 </style>
 </head><body>
 <div id="map" role="application" aria-label="Mapa"></div>

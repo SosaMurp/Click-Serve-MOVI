@@ -1,15 +1,40 @@
 import React, { useState } from 'react';
 import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { color, Icon, IconButton, radius, space, Text } from '../../design';
+import { color, Icon, IconButton, Pill, radius, space, Text } from '../../design';
 import { fileUrl } from '../../api/client';
+import type { Evidencia } from '../../api/types';
+import { formatDateTime } from '../../lib/format';
 
-// Galería de fotos con visor a pantalla completa (la "lupa" de RF-65).
-export function Gallery({ items, size = 88 }: { items: { url: string; label?: string }[]; size?: number }) {
-  const [open, setOpen] = useState<number | null>(null);
+type Photo = { url: string; label?: string };
+
+// Visor a pantalla completa con anterior/siguiente (la "lupa" de RF-65).
+export function PhotoViewer({ items, index, onClose, onIndex }: { items: Photo[]; index: number | null; onClose: () => void; onIndex: (i: number) => void }) {
   const insets = useSafeAreaInsets();
+  const current = index !== null ? items[index] : null;
+  return (
+    <Modal visible={index !== null} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={[styles.viewer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <View style={styles.viewerBar}>
+          <Text variant="label" tone="onColor" style={styles.flex}>{current?.label || `Foto ${(index ?? 0) + 1} de ${items.length}`}</Text>
+          <IconButton icon="x" label="Cerrar" tint={color.inkOnColor} onPress={onClose} />
+        </View>
+        {current ? <Image source={{ uri: fileUrl(current.url) || undefined }} style={styles.full} resizeMode="contain" accessibilityLabel={current.label || 'Foto'} /> : null}
+        {items.length > 1 ? (
+          <View style={styles.nav}>
+            <IconButton icon="chevron-left" label="Anterior" tint={color.inkOnColor} onPress={() => onIndex(((index ?? 0) - 1 + items.length) % items.length)} />
+            <IconButton icon="chevron-right" label="Siguiente" tint={color.inkOnColor} onPress={() => onIndex(((index ?? 0) + 1) % items.length)} />
+          </View>
+        ) : null}
+      </View>
+    </Modal>
+  );
+}
+
+// Cuadrícula de miniaturas que abre el visor.
+export function Gallery({ items, size = 88 }: { items: Photo[]; size?: number }) {
+  const [open, setOpen] = useState<number | null>(null);
   if (!items.length) return null;
-  const current = open !== null ? items[open] : null;
   return (
     <>
       <View style={styles.grid}>
@@ -20,21 +45,38 @@ export function Gallery({ items, size = 88 }: { items: { url: string; label?: st
           </Pressable>
         ))}
       </View>
-      <Modal visible={open !== null} transparent animationType="fade" onRequestClose={() => setOpen(null)}>
-        <View style={[styles.viewer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-          <View style={styles.viewerBar}>
-            <Text variant="label" tone="onColor" style={styles.flex}>{current?.label || `Foto ${(open ?? 0) + 1} de ${items.length}`}</Text>
-            <IconButton icon="x" label="Cerrar" tint={color.inkOnColor} onPress={() => setOpen(null)} />
-          </View>
-          {current ? <Image source={{ uri: fileUrl(current.url) || undefined }} style={styles.full} resizeMode="contain" accessibilityLabel={current.label || 'Foto'} /> : null}
-          {items.length > 1 ? (
-            <View style={styles.nav}>
-              <IconButton icon="chevron-left" label="Anterior" tint={color.inkOnColor} onPress={() => setOpen((o) => ((o ?? 0) - 1 + items.length) % items.length)} />
-              <IconButton icon="chevron-right" label="Siguiente" tint={color.inkOnColor} onPress={() => setOpen((o) => ((o ?? 0) + 1) % items.length)} />
+      <PhotoViewer items={items} index={open} onClose={() => setOpen(null)} onIndex={setOpen} />
+    </>
+  );
+}
+
+const TIPO: Record<string, { label: string; tone: 'brand' | 'accent' | 'success' }> = {
+  ANTES: { label: 'Antes', tone: 'accent' },
+  DURANTE: { label: 'Durante', tone: 'brand' },
+  DESPUES: { label: 'Después', tone: 'success' },
+};
+
+// Evidencias como feed: foto grande, etiqueta de etapa y hora (RF-65/69).
+export function EvidenceFeed({ items }: { items: Evidencia[] }) {
+  const [open, setOpen] = useState<number | null>(null);
+  if (!items.length) return null;
+  const photos = items.map((e) => ({ url: e.url, label: `${TIPO[e.tipo_evidencia]?.label || e.tipo_evidencia}${e.descripcion ? ` · ${e.descripcion}` : ''}` }));
+  return (
+    <>
+      {items.map((e, i) => {
+        const t = TIPO[e.tipo_evidencia] || { label: e.tipo_evidencia, tone: 'brand' as const };
+        return (
+          <Pressable key={e.id_evidencia} accessibilityRole="imagebutton" accessibilityLabel={`Ver evidencia: ${photos[i].label}`} onPress={() => setOpen(i)} style={styles.feedCard}>
+            <Image source={{ uri: fileUrl(e.url) || undefined }} style={styles.feedImg} resizeMode="cover" />
+            <View style={styles.feedPill}><Pill label={t.label} tone={t.tone} size="sm" solid /></View>
+            <View style={styles.feedText}>
+              {e.descripcion ? <Text variant="body" numberOfLines={2}>{e.descripcion}</Text> : null}
+              <Text variant="caption" tone="muted">{formatDateTime(e.fecha_subida)}</Text>
             </View>
-          ) : null}
-        </View>
-      </Modal>
+          </Pressable>
+        );
+      })}
+      <PhotoViewer items={photos} index={open} onClose={() => setOpen(null)} onIndex={setOpen} />
     </>
   );
 }
@@ -48,4 +90,8 @@ const styles = StyleSheet.create({
   viewerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg },
   full: { flex: 1, width: '100%' },
   nav: { flexDirection: 'row', justifyContent: 'center', gap: space.xl, paddingVertical: space.md },
+  feedCard: { backgroundColor: color.surface, borderRadius: radius.lg, overflow: 'hidden', marginBottom: space.md },
+  feedImg: { width: '100%', height: 200, backgroundColor: color.groundAlt },
+  feedPill: { position: 'absolute', top: space.md, left: space.md },
+  feedText: { padding: space.md, gap: 2 },
 });

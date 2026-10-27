@@ -54,7 +54,7 @@ export function Button({ title, onPress, variant = 'primary', icon, iconRight, l
             backgroundColor: state.pressed || hovered ? v.pressed : v.bg,
             borderColor: v.border || 'transparent',
             borderWidth: v.border ? 1 : 0,
-            alignSelf: full ? 'stretch' : 'flex-start',
+            alignSelf: full ? 'stretch' : floating ? 'center' : 'flex-start',
             paddingHorizontal: variant === 'text' ? 12 : 24,
             opacity: inactive && !loading ? 0.45 : 1,
           },
