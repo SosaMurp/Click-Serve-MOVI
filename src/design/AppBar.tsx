@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useRef } from 'react';
+import { BackHandler, Platform, StyleSheet, View } from 'react-native';
+import { useIsFocused, useNavigation, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { IconButton } from './Button';
@@ -8,6 +8,7 @@ import { IconName } from './Icon';
 import { Text } from './Text';
 import { color, elevation, space } from './tokens';
 import { dialog } from '../ui/dialog';
+import { goBack as navGoBack } from '../lib/nav';
 
 export type AppBarAction = { icon: IconName; label: string; onPress: () => void; badge?: number | boolean };
 
@@ -26,7 +27,10 @@ type Props = {
 // Encabezado simple sobre el fondo claro: botón circular para regresar, título centrado y acciones circulares.
 export function AppBar({ title, subtitle, back = true, onBack, confirmDiscard, actions = [], right, fallbackHref = '/' }: Props) {
   const router = useRouter();
+  const navigation = useNavigation();
+  const focused = useIsFocused();
   const insets = useSafeAreaInsets();
+  const guard = back && !!confirmDiscard;
 
   const goBack = async () => {
     if (confirmDiscard) {
@@ -40,9 +44,25 @@ export function AppBar({ title, subtitle, back = true, onBack, confirmDiscard, a
       if (!ok) return;
     }
     if (onBack) return onBack();
-    if (router.canGoBack()) router.back();
-    else router.replace(fallbackHref as never);
+    navGoBack(router, fallbackHref);
   };
+  const goBackRef = useRef(goBack);
+  goBackRef.current = goBack;
+
+  // RF-84 también para los gestos del sistema: el botón atrás de Android pasa por la misma pregunta
+  // (solo en la pantalla visible) y el deslizar para regresar de iOS se apaga mientras haya cambios.
+  // Las salidas por código después de guardar no se interceptan.
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: !guard });
+  }, [navigation, guard]);
+  useEffect(() => {
+    if (!guard || !focused || Platform.OS !== 'android') return undefined;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      goBackRef.current();
+      return true;
+    });
+    return () => sub.remove();
+  }, [guard, focused]);
 
   return (
     <View style={[styles.bar, { paddingTop: insets.top + space.xs }]}>
