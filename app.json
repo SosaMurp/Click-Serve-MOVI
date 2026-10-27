@@ -10,15 +10,17 @@
     "plugins": [
       "expo-router",
       [
-        "expo-camera",
+        "expo-image-picker",
         {
-          "cameraPermission": "Permitir que Click & Serve use la cámara para verificar tu identidad."
+          "photosPermission": "Permitir que Click & Serve adjunte fotos a tus solicitudes, evidencias y mensajes.",
+          "cameraPermission": "Permitir que Click & Serve use la cámara para verificar tu identidad y tomar fotos del servicio.",
+          "microphonePermission": false
         }
       ],
       [
-        "expo-image-picker",
+        "expo-location",
         {
-          "photosPermission": "Permitir que Click & Serve adjunte fotos del problema al solicitar un servicio."
+          "locationWhenInUsePermission": "Permitir que Click & Serve use tu ubicación para ubicar el servicio y mostrar técnicos cercanos."
         }
       ],
       "expo-secure-store",
@@ -36,16 +38,9 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "FOREGROUND_SERVICE"
+        "ACCESS_FINE_LOCATION"
       ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "TU_API_KEY_AQUI"
-        }
-      },
       "package": "com.gallo122.clickservemovil"
     },
     "web": {
