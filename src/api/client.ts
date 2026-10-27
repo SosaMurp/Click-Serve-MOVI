@@ -1,11 +1,12 @@
 import * as Crypto from 'expo-crypto';
 import { getToken } from '../state/tokenStore';
+import { resolveApiUrl } from '../lib/apiUrl';
 
 // En producción la URL debe ser HTTPS (RNF-01/03); en desarrollo se permite el backend local.
-export const API_URL = String(process.env.EXPO_PUBLIC_API_URL || (__DEV__ ? 'http://localhost:3001' : '')).replace(/\/$/, '');
+export const API_URL = resolveApiUrl(process.env.EXPO_PUBLIC_API_URL, __DEV__);
 
-if (!__DEV__ && API_URL && !API_URL.startsWith('https://')) {
-  console.warn('EXPO_PUBLIC_API_URL debe usar HTTPS en producción.');
+if (!API_URL) {
+  console.error('EXPO_PUBLIC_API_URL falta o no usa HTTPS: la app no enviará datos a ese servidor.');
 }
 
 export class ApiError extends Error {
