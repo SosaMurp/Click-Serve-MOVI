@@ -10,7 +10,7 @@ export { Screen } from './Screen';
 export { Surface, Divider, ListItem, SectionHeader } from './Surface';
 export { TextField } from './TextField';
 export { OtpField } from './OtpField';
-export { Chip, Segmented, SwitchRow, Avatar, EmptyState, Banner, RatingStars } from './Controls';
+export { Chip, Segmented, SwitchRow, Checkbox, Avatar, EmptyState, Banner, RatingStars } from './Controls';
 export { Skeleton, SkeletonList } from './Skeleton';
 export { Sheet } from './Sheet';
 export { makeNavigationBar } from './NavigationBar';

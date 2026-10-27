@@ -21,12 +21,12 @@ async function compress(asset: ImagePicker.ImagePickerAsset): Promise<LocalFile>
 
 export class MediaPermissionError extends Error {}
 
-export async function pickImages(opts: { camera?: boolean; multiple?: boolean; max?: number } = {}): Promise<LocalFile[]> {
+export async function pickImages(opts: { camera?: boolean; front?: boolean; multiple?: boolean; max?: number } = {}): Promise<LocalFile[]> {
   let result: ImagePicker.ImagePickerResult;
   if (opts.camera && Platform.OS !== 'web') {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) throw new MediaPermissionError('Permite el acceso a la cámara en los ajustes de tu teléfono para tomar la foto.');
-    result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
+    result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85, cameraType: opts.front ? ImagePicker.CameraType.front : ImagePicker.CameraType.back });
   } else {
     result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],

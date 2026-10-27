@@ -80,6 +80,19 @@ export function SwitchRow({ label, description, value, onChange, disabled }: { l
   );
 }
 
+// ───────── Casilla de verificación ─────────
+export function Checkbox({ checked, onChange, children, error }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode; error?: string | null }) {
+  return (
+    <View>
+      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={() => onChange(!checked)} style={styles.checkRow}>
+        <Icon name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'} size={26} color={checked ? color.cobalt : error ? color.bermellon : color.inkSoft} />
+        <View style={styles.flex}>{children}</View>
+      </Pressable>
+      {error ? <Text variant="caption" tone="bermellon" style={{ marginLeft: 38 }}>{error}</Text> : null}
+    </View>
+  );
+}
+
 // ───────── Avatar ─────────
 export function Avatar({ uri, nombre, apellido, size = 44 }: { uri?: string | null; nombre?: string | null; apellido?: string | null; size?: number }) {
   if (uri) {
@@ -156,6 +169,7 @@ const styles = StyleSheet.create({
   segItem: { flex: 1, minHeight: touch.min, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: space.sm },
   segDivider: { borderLeftWidth: 1.5, borderLeftColor: color.lineStrong },
   segOn: { backgroundColor: color.cobaltSoft },
+  checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md, minHeight: touch.min, paddingVertical: space.sm },
   switchRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
   avatar: { backgroundColor: color.cobaltSoft, alignItems: 'center', justifyContent: 'center' },
   empty: { alignItems: 'center', paddingVertical: space.xxl, paddingHorizontal: space.xl },
