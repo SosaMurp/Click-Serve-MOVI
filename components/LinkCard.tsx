@@ -5,14 +5,17 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Platform,
   Switch,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { api } from './context/AuthContext';
 
 export default function LinkCard() {
   const router = useRouter();
@@ -24,6 +27,7 @@ export default function LinkCard() {
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
   const [cardError, setCardError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // Algoritmo de Luhn para validación de tarjetas
   const validateLuhn = (num: string): boolean => {
@@ -40,7 +44,7 @@ export default function LinkCard() {
     return sum % 10 === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setCardError('');
 
     if (!cardHolder.trim()) {
@@ -69,8 +73,31 @@ export default function LinkCard() {
       return;
     }
 
-    // Si todo es válido, regresa
-    router.back();
+    setSaving(true);
+    try {
+      const res = await api.post('/api/metodos-pago', {
+        titular: cardHolder.trim(),
+        numero_tarjeta: cleanNumber,
+        expiracion: expiry.trim(),
+        cvv: cvv.trim(),
+        es_principal: isMainCard,
+      });
+
+      if (res && res.status >= 400) {
+        throw new Error(res.data?.error || `Error HTTP ${res.status}`);
+      }
+
+      Alert.alert('Éxito', 'Tarjeta vinculada correctamente.', [
+        {
+          text: 'OK',
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Error de conexión al vincular la tarjeta.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -78,13 +105,13 @@ export default function LinkCard() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <Feather name="x" size={24} color="#0A192F" />
+          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton} activeOpacity={0.8}>
+            <Feather name="x" size={24} color="#0F172A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Vincular Tarjeta</Text>
         </View>
         <View style={styles.secureBadge}>
-          <Feather name="lock" size={10} color="#0A192F" />
+          <Feather name="shield" size={12} color="#10B981" />
           <Text style={styles.secureText}>SECURE</Text>
         </View>
       </View>
@@ -95,33 +122,44 @@ export default function LinkCard() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           
-          {/* Card Mockup (Faint) */}
+          {/* Card Mockup (Elegante Dark Slate #1E293B sobre fondo claro) */}
           <View style={styles.cardMockup}>
             <View style={styles.mockupTopRow}>
               <View style={styles.mockupChip} />
-              <View style={styles.mockupChip} />
+              <Text style={styles.mockupBrand}>Click&Serve</Text>
             </View>
             <View style={styles.mockupMiddle}>
-              <Text style={styles.mockupText}>Click&Serve</Text>
+              <Text style={styles.mockupNumber}>
+                {cardNumber.trim() ? cardNumber : '•••• •••• •••• ••••'}
+              </Text>
             </View>
             <View style={styles.mockupBottomRow}>
-              <View style={styles.mockupLine} />
-              <View style={styles.mockupLine} />
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={styles.mockupLabel}>TITULAR</Text>
+                <Text style={styles.mockupValue} numberOfLines={1}>
+                  {cardHolder.trim() ? cardHolder.toUpperCase() : 'NOMBRE DEL TITULAR'}
+                </Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.mockupLabel}>VENCE</Text>
+                <Text style={styles.mockupValue}>{expiry.trim() ? expiry : 'MM/YY'}</Text>
+              </View>
             </View>
           </View>
           
           <View style={styles.securityTextContainer}>
+            <Feather name="lock" size={11} color="#64748B" style={{ marginRight: 6 }} />
             <Text style={styles.securityTextSmall}>ENCRIPTADO SSL DE 256 BITS</Text>
           </View>
 
-          {/* Form */}
+          {/* Formulario */}
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>NOMBRE DEL TITULAR</Text>
               <TextInput 
                 style={styles.input} 
                 placeholder="Como aparece en la tarjeta"
-                placeholderTextColor="#C4CDD5"
+                placeholderTextColor="#94A3B8"
                 value={cardHolder}
                 onChangeText={(text) => {
                   setCardHolder(text);
@@ -134,9 +172,9 @@ export default function LinkCard() {
               <Text style={styles.label}>NÚMERO DE TARJETA</Text>
               <View style={styles.inputWithIcon}>
                 <TextInput 
-                  style={[styles.input, { flex: 1, borderBottomWidth: 0 }]} 
+                  style={[styles.input, { flex: 1, borderWidth: 0 }]} 
                   placeholder="0000 0000 0000 0000"
-                  placeholderTextColor="#C4CDD5"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
                   value={cardNumber}
                   onChangeText={(text) => {
@@ -151,17 +189,17 @@ export default function LinkCard() {
                   }}
                   maxLength={23}
                 />
-                <Feather name="credit-card" size={20} color="#C4CDD5" />
+                <Feather name="credit-card" size={20} color="#94A3B8" style={{ marginRight: 14 }} />
               </View>
             </View>
 
             <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1, marginRight: 15 }]}>
+              <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
                 <Text style={styles.label}>VENCIMIENTO</Text>
                 <TextInput 
                   style={styles.input} 
                   placeholder="MM / YY"
-                  placeholderTextColor="#C4CDD5"
+                  placeholderTextColor="#94A3B8"
                   value={expiry}
                   onChangeText={(text) => {
                     const cleaned = text.replace(/\D/g, '');
@@ -180,7 +218,7 @@ export default function LinkCard() {
                 <TextInput 
                   style={styles.input} 
                   placeholder="***"
-                  placeholderTextColor="#C4CDD5"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
                   secureTextEntry
                   value={cvv}
@@ -199,14 +237,14 @@ export default function LinkCard() {
 
             {/* Toggle Switch */}
             <View style={styles.switchContainer}>
-              <View>
+              <View style={{ flex: 1, paddingRight: 12 }}>
                 <Text style={styles.switchTitle}>TARJETA PRINCIPAL</Text>
-                <Text style={styles.switchSubtitle}>Usar para cobros rápidos</Text>
+                <Text style={styles.switchSubtitle}>Usar para cobros y servicios rápidos</Text>
               </View>
               <Switch
-                trackColor={{ false: '#D1D9E0', true: '#0A192F' }}
+                trackColor={{ false: '#E2E8F0', true: '#FF6B1A' }}
                 thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#D1D9E0"
+                ios_backgroundColor="#E2E8F0"
                 onValueChange={() => setIsMainCard(!isMainCard)}
                 value={isMainCard}
               />
@@ -215,10 +253,19 @@ export default function LinkCard() {
 
         </ScrollView>
         
-        {/* Update Button */}
+        {/* Footer con Botón Oficial */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.confirmButton} onPress={handleSave}>
-            <Text style={styles.confirmButtonText}>CONFIRMAR Y GUARDAR</Text>
+          <TouchableOpacity 
+            style={[styles.confirmButton, saving && { opacity: 0.7 }]} 
+            onPress={handleSave}
+            disabled={saving}
+            activeOpacity={0.85}
+          >
+            {saving ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.confirmButtonText}>CONFIRMAR Y GUARDAR</Text>
+            )}
           </TouchableOpacity>
           <Text style={styles.termsText}>
             AL GUARDAR, ACEPTAS EL PROCESAMIENTO DE DATOS BAJO LOS TÉRMINOS DE CLICK&SERVE PLATAFORMA
@@ -230,40 +277,131 @@ export default function LinkCard() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingTop: 16, 
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0'
+  },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
-  closeButton: { padding: 5, marginLeft: -5, marginRight: 10 },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  secureBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F4F8', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
-  secureText: { fontSize: 9, fontWeight: '800', color: '#0A192F', letterSpacing: 1, marginLeft: 4 },
+  closeButton: { padding: 4, marginRight: 10 },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: '#0F172A' },
+  secureBadge: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#E6F8F0', 
+    borderWidth: 1, 
+    borderColor: '#A7F3D0', 
+    paddingHorizontal: 10, 
+    paddingVertical: 5, 
+    borderRadius: 14 
+  },
+  secureText: { fontSize: 10, fontWeight: '800', color: '#10B981', letterSpacing: 1, marginLeft: 4 },
   scrollContainer: { paddingBottom: 20 },
   
-  cardMockup: { margin: 25, backgroundColor: '#F8FAFC', borderRadius: 16, padding: 20, height: 180, justifyContent: 'space-between', borderWidth: 1, borderColor: '#F0F4F8' },
-  mockupTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  mockupChip: { width: 30, height: 20, borderRadius: 4, backgroundColor: '#E1E8ED' },
-  mockupMiddle: { alignItems: 'center' },
-  mockupText: { fontSize: 32, fontWeight: '800', color: '#E1E8ED', fontStyle: 'italic', opacity: 0.5 },
-  mockupBottomRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  mockupLine: { width: 60, height: 8, borderRadius: 4, backgroundColor: '#E1E8ED' },
-  
-  securityTextContainer: { alignItems: 'center', marginBottom: 15 },
-  securityTextSmall: { fontSize: 8, fontWeight: '700', color: '#C4CDD5', letterSpacing: 1.5 },
+  cardMockup: { 
+    margin: 20, 
+    backgroundColor: '#1E293B', 
+    borderRadius: 16, 
+    padding: 22, 
+    height: 190, 
+    justifyContent: 'space-between', 
+    borderWidth: 1, 
+    borderColor: '#334155',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4
+  },
+  mockupTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  mockupChip: { 
+    width: 38, 
+    height: 26, 
+    borderRadius: 5, 
+    backgroundColor: '#CBD5E1', 
+    borderWidth: 1, 
+    borderColor: '#94A3B8' 
+  },
+  mockupBrand: { fontSize: 15, fontWeight: '800', color: '#FF6B1A', fontStyle: 'italic', letterSpacing: 0.5 },
+  mockupMiddle: { marginVertical: 8 },
+  mockupNumber: { 
+    fontSize: 20, 
+    color: '#FFFFFF', 
+    letterSpacing: 2.5, 
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', 
+    fontWeight: '700' 
+  },
+  mockupBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  mockupLabel: { fontSize: 8, fontWeight: '800', color: '#94A3B8', letterSpacing: 1.2, marginBottom: 4 },
+  mockupValue: { fontSize: 12, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
 
-  formContainer: { paddingHorizontal: 25 },
-  inputGroup: { marginBottom: 25 },
-  label: { fontSize: 9, fontWeight: '800', color: '#7A8C9E', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' },
-  input: { fontSize: 16, color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', borderBottomWidth: 1, borderBottomColor: '#F0F4F8', paddingVertical: 8 },
-  inputWithIcon: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#F0F4F8' },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  securityTextContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  securityTextSmall: { fontSize: 9, fontWeight: '800', color: '#64748B', letterSpacing: 1.2 },
+
+  formContainer: { paddingHorizontal: 20 },
+  inputGroup: { marginBottom: 18 },
+  label: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' },
+  input: { 
+    fontSize: 14, 
+    color: '#0F172A', 
+    backgroundColor: '#FFFFFF', 
+    borderWidth: 1, 
+    borderColor: '#E2E8F0', 
+    borderRadius: 12, 
+    paddingHorizontal: 14, 
+    paddingVertical: 13,
+    minHeight: 48,
+  },
+  inputWithIcon: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#FFFFFF', 
+    borderWidth: 1, 
+    borderColor: '#E2E8F0', 
+    borderRadius: 12,
+  },
+  row: { flexDirection: 'row' },
   
-  switchContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingVertical: 15, borderTopWidth: 1, borderTopColor: '#F0F4F8' },
-  switchTitle: { fontSize: 11, fontWeight: '800', color: '#0A192F', letterSpacing: 1, marginBottom: 4 },
-  switchSubtitle: { fontSize: 11, color: '#7A8C9E', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic' },
+  switchContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginTop: 6, 
+    paddingVertical: 14, 
+    borderTopWidth: 1, 
+    borderTopColor: '#E2E8F0' 
+  },
+  switchTitle: { fontSize: 11, fontWeight: '800', color: '#0F172A', letterSpacing: 0.8, marginBottom: 4 },
+  switchSubtitle: { fontSize: 12, color: '#64748B' },
   
-  footer: { paddingHorizontal: 25, paddingVertical: 20, backgroundColor: '#FFFFFF' },
-  confirmButton: { backgroundColor: '#0A192F', paddingVertical: 18, borderRadius: 4, alignItems: 'center', marginBottom: 15 },
-  confirmButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
-  termsText: { fontSize: 8, color: '#9CA8B6', textAlign: 'center', fontWeight: '700', letterSpacing: 1, lineHeight: 12 },
-  errorText: { color: '#FF6B6B', fontSize: 11, fontWeight: '700', marginTop: -5, marginBottom: 15, textAlign: 'center' },
+  footer: { 
+    paddingHorizontal: 20, 
+    paddingVertical: 18, 
+    backgroundColor: '#FFFFFF', 
+    borderTopWidth: 1, 
+    borderTopColor: '#E2E8F0' 
+  },
+  confirmButton: { 
+    backgroundColor: '#FF6B1A', 
+    height: 52, 
+    borderRadius: 14, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginBottom: 12,
+    shadowColor: '#FF6B1A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  confirmButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: 0.8, textAlign: 'center' },
+  termsText: { fontSize: 9, color: '#64748B', textAlign: 'center', fontWeight: '600', letterSpacing: 0.5, lineHeight: 14 },
+  errorText: { color: '#EF4444', fontSize: 12, fontWeight: '700', marginTop: -6, marginBottom: 14, textAlign: 'center' },
 });

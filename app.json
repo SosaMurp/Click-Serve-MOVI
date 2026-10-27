@@ -9,8 +9,18 @@
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",
-      ["expo-camera", { "cameraPermission": "Permitir que Click & Serve use la cámara para verificar tu identidad." }],
-      ["expo-image-picker", { "photosPermission": "Permitir que Click & Serve adjunte fotos del problema al solicitar un servicio." }]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir que Click & Serve use la cámara para verificar tu identidad."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir que Click & Serve adjunte fotos del problema al solicitar un servicio."
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true
@@ -21,10 +31,29 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "TU_API_KEY_AQUI"
+        }
+      },
+      "package": "com.gallo122.clickservemovil"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c6c536d8-cc7b-46fa-974a-4ad6dd7a4932"
+      }
     }
   }
 }

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
 import { theme } from '../theme';
 
 interface AppInputProps extends TextInputProps {
@@ -13,31 +7,21 @@ interface AppInputProps extends TextInputProps {
   error?: string;
 }
 
-export const AppInput: React.FC<AppInputProps> = ({
-  label,
-  error,
-  style,
-  ...props
-}) => {
-  return (
-    <View style={styles.container}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
-      <TextInput
-        style={[styles.input, error ? styles.inputError : null, style]}
-        placeholderTextColor={theme.colors.textMuted}
-        selectionColor={theme.colors.primary}
-        {...props}
-      />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </View>
-  );
-};
+export const AppInput: React.FC<AppInputProps> = ({ label, error, style, ...props }) => (
+  <View style={styles.container}>
+    {label ? <Text style={styles.label}>{label}</Text> : null}
+    <TextInput
+      style={[styles.input, error ? styles.inputError : null, style]}
+      placeholderTextColor={theme.colors.textMuted}
+      selectionColor={theme.colors.cyan}
+      {...props}
+    />
+    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+  </View>
+);
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-    width: '100%',
-  },
+  container: { marginBottom: 16, width: '100%' },
   label: {
     fontSize: 11,
     color: theme.colors.textSecondary,
@@ -48,16 +32,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    fontSize: 16,
-    paddingVertical: 10,
-    color: theme.colors.text,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#000',
+    minHeight: 50,
     fontFamily: theme.fonts.body,
   },
-  inputError: {
-    borderBottomColor: theme.colors.error,
-  },
+  inputError: { borderColor: theme.colors.error },
   errorText: {
     color: theme.colors.error,
     fontSize: 12,

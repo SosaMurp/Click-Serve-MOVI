@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getServices, Service } from '../services/servicesApi';
@@ -25,6 +33,10 @@ export default function ServiceList() {
 
   const title = category ? `Servicios de ${category}` : search ? `Resultados para "${search}"` : 'Servicios disponibles';
 
+  const handleLeaveOpenAndExit = () => {
+    router.replace('/client-dashboard');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -35,7 +47,20 @@ export default function ServiceList() {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>TÉCNICOS DISPONIBLES CERCA DE TI</Text>
         </View>
+        <TouchableOpacity onPress={handleLeaveOpenAndExit} style={styles.exitHeaderButton}>
+          <Feather name="log-out" size={18} color="#FF6B1A" />
+        </TouchableOpacity>
       </View>
+
+      {/* Botón Destacado: Dejar solicitud abierta y salir al inicio */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 14 }}>
+        <TouchableOpacity style={styles.leaveOpenBanner} onPress={handleLeaveOpenAndExit}>
+          <Feather name="globe" size={18} color="#FF6B1A" style={{ marginRight: 10 }} />
+          <Text style={styles.leaveOpenBannerText}>Dejar solicitud abierta y salir al inicio</Text>
+          <Feather name="chevron-right" size={18} color="#FF6B1A" />
+        </TouchableOpacity>
+      </View>
+
       {loading ? (
         <View style={styles.center}><ActivityIndicator size="large" color="#0A192F" /></View>
       ) : (
@@ -70,8 +95,11 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 18, borderBottomWidth: 1, borderBottomColor: '#F0F4F8' },
   backButton: { padding: 5, marginRight: 10 },
   headerText: { flex: 1 },
-  title: { color: '#0A192F', fontSize: 20, fontWeight: '800' },
-  subtitle: { color: '#9CA8B6', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 5 },
+  title: { color: '#0A192F', fontSize: 20, fontWeight: '800', lineHeight: 26 },
+  subtitle: { color: '#9CA8B6', fontSize: 10, fontWeight: '800', letterSpacing: 1.2, marginTop: 8 },
+  exitHeaderButton: { padding: 8, backgroundColor: '#FFF7ED', borderRadius: 20, borderWidth: 1, borderColor: '#FFD8BE', marginLeft: 10 },
+  leaveOpenBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF7ED', borderWidth: 1.5, borderColor: '#FF6B1A', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 14, justifyContent: 'space-between' },
+  leaveOpenBannerText: { flex: 1, color: '#FF6B1A', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
   list: { padding: 20, paddingBottom: 32 },
   card: { flexDirection: 'row', alignItems: 'center', padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#E8EEF3', borderRadius: 10, backgroundColor: '#FFFFFF' },
   avatar: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#F4F6F8', alignItems: 'center', justifyContent: 'center', marginRight: 14 },

@@ -1,18 +1,77 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
-  Platform
+  Platform,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { getBilletera, solicitarRetiro, Billetera } from '../services/walletApi';
 
 export default function TechWithdraw() {
   const router = useRouter();
+  const [billetera, setBilletera] = useState<Billetera | null>(null);
+  const [montoText, setMontoText] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
+
+  const loadWallet = async () => {
+    try {
+      setLoading(true);
+      const data = await getBilletera();
+      setBilletera(data);
+    } catch (error) {
+      console.error('Error al obtener billetera:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const availableAmount = typeof billetera?.saldo_actual === 'string'
+    ? parseFloat(billetera.saldo_actual)
+    : billetera?.saldo_actual || 0;
+
+  const montoNum = parseFloat(montoText) || 0;
+  const isValidAmount = montoNum > 0 && montoNum <= availableAmount;
+
+  const handleWithdraw = async () => {
+    if (!billetera?.clabe_interbancaria) {
+      Alert.alert('Cuenta Requerida', 'Debes registrar una cuenta CLABE de 18 dígitos antes de solicitar un retiro.', [
+        { text: 'Registrar Cuenta', onPress: () => router.push('/tech-bank-account' as any) },
+        { text: 'Cancelar', style: 'cancel' }
+      ]);
+      return;
+    }
+
+    if (!isValidAmount) {
+      Alert.alert('Monto Inválido', 'Por favor ingresa un monto válido menor o igual a tu saldo disponible.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const res = await solicitarRetiro(montoNum);
+      Alert.alert('Retiro Solicitado', res.mensaje || 'Tu retiro ha sido registrado correctamente.', [
+        { text: 'OK', onPress: () => router.push('/tech-wallet' as any) }
+      ]);
+    } catch (error: any) {
+      const errMsg = error.response?.data?.error || 'No se pudo procesar el retiro.';
+      Alert.alert('Error', errMsg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -32,24 +91,36 @@ export default function TechWithdraw() {
           
           <View style={styles.amountInputRow}>
             <Text style={styles.currencySymbol}>$</Text>
-            <Text style={styles.amountValue}>1420.00</Text>
+            <TextInput
+              style={styles.amountInput}
+              placeholder="0.00"
+              placeholderTextColor="#C4CDD5"
+              keyboardType="decimal-pad"
+              value={montoText}
+              onChangeText={setMontoText}
+            />
           </View>
           
           <View style={styles.availableRow}>
-            <Text style={styles.availableText}>Disponible: $1,420.00</Text>
-            <TouchableOpacity style={styles.maxBadge}>
+            <Text style={styles.availableText}>
+              Disponible: ${availableAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+            </Text>
+            <TouchableOpacity 
+              style={styles.maxBadge}
+              onPress={() => setMontoText(availableAmount.toString())}
+            >
               <Text style={styles.maxBadgeText}>RETIRAR MÁXIMO</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.chipsRow}>
-            <TouchableOpacity style={styles.chip}>
+            <TouchableOpacity style={styles.chip} onPress={() => setMontoText('200')}>
+              <Text style={styles.chipText}>$200</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.chip} onPress={() => setMontoText('500')}>
               <Text style={styles.chipText}>$500</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.chip}>
-              <Text style={styles.chipText}>$1,000</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.chipActive}>
+            <TouchableOpacity style={styles.chipActive} onPress={() => setMontoText(availableAmount.toString())}>
               <Text style={styles.chipTextActive}>Máximo</Text>
             </TouchableOpacity>
           </View>
@@ -64,11 +135,17 @@ export default function TechWithdraw() {
               <Feather name="credit-card" size={18} color="#0A192F" />
             </View>
             <View>
-              <Text style={styles.accountName}>BBVA Bancomer</Text>
-              <Text style={styles.accountClabe}>CLABE **** 5678</Text>
+              <Text style={styles.accountName}>
+                {billetera?.clabe_interbancaria ? 'Cuenta Clabe Vinculada' : 'Sin Cuenta'}
+              </Text>
+              <Text style={styles.accountClabe}>
+                {billetera?.clabe_interbancaria 
+                  ? `CLABE **** ${billetera.clabe_interbancaria.slice(-4)}` 
+                  : 'Registra tu CLABE antes de retirar'}
+              </Text>
             </View>
           </View>
-          <Feather name="check" size={16} color="#10B981" />
+          {billetera?.clabe_interbancaria ? <Feather name="check" size={16} color="#10B981" /> : null}
         </View>
 
         {/* Summary */}
@@ -77,7 +154,7 @@ export default function TechWithdraw() {
         <View style={styles.summaryCard}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Monto de retiro</Text>
-            <Text style={styles.summaryValue}>$1,420.00</Text>
+            <Text style={styles.summaryValue}>${montoNum.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Comisión Click&Serve</Text>
@@ -88,7 +165,7 @@ export default function TechWithdraw() {
           
           <View style={styles.summaryTotalRow}>
             <Text style={styles.summaryTotalLabel}>TOTAL A RECIBIR</Text>
-            <Text style={styles.summaryTotalValue}>$1,420.00</Text>
+            <Text style={styles.summaryTotalValue}>${montoNum.toFixed(2)}</Text>
           </View>
         </View>
 
@@ -97,11 +174,18 @@ export default function TechWithdraw() {
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity 
-          style={styles.confirmButton}
-          onPress={() => router.push('/tech-wallet' as any)}
+          style={[styles.confirmButton, (!isValidAmount || submitting || loading) && styles.confirmButtonDisabled]}
+          disabled={!isValidAmount || submitting || loading}
+          onPress={handleWithdraw}
         >
-          <Text style={styles.confirmButtonText}>CONFIRMAR TRANSFERENCIA</Text>
-          <Feather name="arrow-right" size={16} color="#FFFFFF" style={{ marginLeft: 10 }} />
+          {submitting ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <>
+              <Text style={styles.confirmButtonText}>CONFIRMAR TRANSFERENCIA</Text>
+              <Feather name="arrow-right" size={16} color="#FFFFFF" style={{ marginLeft: 10 }} />
+            </>
+          )}
         </TouchableOpacity>
         <Text style={styles.footerNote}>
           OPERACIÓN PROTEGIDA. LOS FONDOS SE REFLEJARÁN EN TU CUENTA EN UN MÁXIMO DE 24 HRS HÁBILES.
@@ -122,8 +206,8 @@ const styles = StyleSheet.create({
   amountSection: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingTop: 30, paddingBottom: 30, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#F0F4F8', marginBottom: 25 },
   sectionLabelCenter: { fontSize: 9, fontWeight: '800', color: '#7A8C9E', letterSpacing: 1.5, marginBottom: 25 },
   amountInputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-  currencySymbol: { fontSize: 24, fontWeight: '800', color: '#C4CDD5', marginRight: 10 },
-  amountValue: { fontSize: 42, fontWeight: '800', color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  currencySymbol: { fontSize: 32, fontWeight: '800', color: '#C4CDD5', marginRight: 5 },
+  amountInput: { fontSize: 38, fontWeight: '800', color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', minWidth: 120, textAlign: 'center' },
   availableRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 30 },
   availableText: { fontSize: 10, color: '#9CA8B6', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic', marginRight: 10 },
   maxBadge: { backgroundColor: '#ECFDF5', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
@@ -155,6 +239,7 @@ const styles = StyleSheet.create({
 
   footer: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: Platform.OS === 'ios' ? 40 : 20, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F0F4F8' },
   confirmButton: { flexDirection: 'row', backgroundColor: '#0A192F', paddingVertical: 18, borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginBottom: 15 },
+  confirmButtonDisabled: { backgroundColor: '#9CA8B6' },
   confirmButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
   footerNote: { fontSize: 7, fontWeight: '800', color: '#E1E8ED', letterSpacing: 1.5, textAlign: 'center', lineHeight: 12 },
 });

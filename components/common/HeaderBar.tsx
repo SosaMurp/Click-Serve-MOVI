@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,28 +18,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   rightElement,
 }) => {
   const router = useRouter();
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      router.back();
-    }
-  };
+  const handleBack = () => (onBack ? onBack() : router.back());
 
   return (
     <View style={styles.header}>
       {showBack ? (
         <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={theme.colors.text} />
+          <Feather name="arrow-left" size={22} color={theme.colors.cyan} />
         </TouchableOpacity>
       ) : (
         <View style={styles.placeholder} />
       )}
-      <Text style={styles.title} numberOfLines={1}>
-        {title}
-      </Text>
-      {rightElement ? <View style={styles.rightContainer}>{rightElement}</View> : <View style={styles.placeholder} />}
+      <Text style={styles.title} numberOfLines={1}>{title}</Text>
+      {rightElement
+        ? <View style={styles.rightContainer}>{rightElement}</View>
+        : <View style={styles.placeholder} />}
     </View>
   );
 };
@@ -52,12 +45,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: theme.colors.glassBorder,
+    backgroundColor: theme.colors.glass,
   },
-  backButton: {
-    padding: 6,
-  },
+  backButton: { padding: 6 },
   title: {
     fontSize: 18,
     fontWeight: '700',
@@ -66,10 +57,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flex: 1,
   },
-  rightContainer: {
-    alignItems: 'flex-end',
-  },
-  placeholder: {
-    width: 34,
-  },
+  rightContainer: { alignItems: 'flex-end' },
+  placeholder: { width: 34 },
 });

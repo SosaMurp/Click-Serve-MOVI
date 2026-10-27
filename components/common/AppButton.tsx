@@ -28,22 +28,15 @@ export const AppButton: React.FC<AppButtonProps> = ({
 
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        styles[variant],
-        isButtonDisabled && styles.disabled,
-        style,
-      ]}
+      style={[styles.button, styles[variant], isButtonDisabled && styles.disabled, style]}
       disabled={isButtonDisabled}
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       {...props}
     >
       {isLoading ? (
-        <ActivityIndicator color={variant === 'outline' ? theme.colors.primary : '#FFFFFF'} />
+        <ActivityIndicator color="#FFFFFF" />
       ) : (
-        <Text style={[styles.text, styles[`${variant}Text`], textStyle]}>
-          {title}
-        </Text>
+        <Text style={[styles.text, styles[`${variant}Text`], textStyle]}>{title}</Text>
       )}
     </TouchableOpacity>
   );
@@ -51,46 +44,51 @@ export const AppButton: React.FC<AppButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 14,
+    height: 52,
     paddingHorizontal: 20,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
   },
   primary: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.orange,
+    shadowColor: theme.colors.orange,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 6,
   },
   secondary: {
-    backgroundColor: theme.colors.accent,
+    backgroundColor: theme.colors.cyan,
+    shadowColor: theme.colors.cyan,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
   outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.glass,
+    borderWidth: 1.5,
+    borderColor: theme.colors.cyan,
   },
   danger: {
     backgroundColor: theme.colors.error,
+    shadowColor: theme.colors.error,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  disabled: {
-    opacity: 0.6,
-  },
+  disabled: { opacity: 0.5 },
   text: {
     fontSize: 14,
     fontWeight: '700',
     fontFamily: theme.fonts.body,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
-  primaryText: {
-    color: '#FFFFFF',
-  },
-  secondaryText: {
-    color: '#FFFFFF',
-  },
-  outlineText: {
-    color: theme.colors.primary,
-  },
-  dangerText: {
-    color: '#FFFFFF',
-  },
+  primaryText:   { color: '#FFFFFF' },
+  secondaryText: { color: '#050D1A' },
+  outlineText:   { color: theme.colors.cyan },
+  dangerText:    { color: '#FFFFFF' },
 });

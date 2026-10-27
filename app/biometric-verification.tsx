@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { api } from '../components/context/AuthContext';
@@ -26,6 +32,52 @@ export default function BiometricVerificationScreen() {
   const [captureMode, setCaptureMode] = useState<'reference' | 'live'>('reference');
   const [referencePhoto, setReferencePhoto] = useState<CapturedPhoto | null>(null);
   const cameraRef = React.useRef<CameraView>(null);
+
+  const [scanCountdown, setScanCountdown] = useState(7);
+  const [isAutoCapturing, setIsAutoCapturing] = useState(false);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const timerRef = React.useRef<any>(null);
+
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission, requestPermission]);
+
+  useEffect(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (cameraVisible && permission?.granted && !isTimerPaused) {
+      setScanCountdown(7);
+      setIsAutoCapturing(true);
+
+      timerRef.current = setInterval(() => {
+        setScanCountdown((prev) => {
+          if (prev <= 1) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            capturePhoto();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setIsAutoCapturing(false);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [cameraVisible, captureMode, permission?.granted, isTimerPaused]);
 
   const requestVerification = async () => {
     if (!token) {
@@ -116,9 +168,27 @@ export default function BiometricVerificationScreen() {
       <View style={styles.container}>
         {cameraVisible ? (
           <View style={styles.cameraContainer}>
-            <CameraView ref={cameraRef} style={styles.camera} facing="front" />
+            {!permission ? (
+              <Text style={styles.status}>Cargando cámara...</Text>
+            ) : !permission.granted ? (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={styles.status}>Se requieren permisos de cámara.</Text>
+                <AppButton title="CONCEDER PERMISOS" onPress={requestPermission} />
+              </View>
+            ) : (
+              <View style={{ flex: 1, position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
+                <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="front" />
+                {isAutoCapturing && (
+                  <View style={{ position: 'absolute', top: 15, alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.75)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>
+                      {scanCountdown > 0 ? `Escaneando rostro... ${scanCountdown}s` : 'Procesando imagen...'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
             <Text style={styles.cameraMode}>Captura {captureMode === 'reference' ? 'de referencia' : 'en vivo'}</Text>
-            <AppButton title="CAPTURAR FOTO" onPress={capturePhoto} isLoading={isLoading} />
+            <AppButton title="CAPTURAR FOTO" onPress={capturePhoto} isLoading={isLoading} disabled={!permission?.granted} />
           </View>
         ) : <>
         <Text style={styles.title}>Verificación facial</Text>

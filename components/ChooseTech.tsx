@@ -4,11 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Platform,
   Modal
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -28,6 +28,11 @@ export default function ChooseTech() {
     router.push({ pathname: '/my-requests', params: { showSuccess: 'true' } } as any);
   };
 
+  const handleLeaveOpenAndExit = () => {
+    // Redirigir al inicio (Dashboard) sin cancelar ni eliminar la orden
+    router.replace('/client-dashboard');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
@@ -37,12 +42,25 @@ export default function ChooseTech() {
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: 10 }}>
           <Text style={styles.headerTitle}>Elegir Técnico</Text>
-          <Text style={styles.headerSubtitle}>LÁZARO CÁRDENAS - PASO 2 DE 2</Text>
+          <Text style={styles.headerSubtitle}>TÉCNICOS DISPONIBLES EN TU ZONA</Text>
         </View>
+        <TouchableOpacity onPress={handleLeaveOpenAndExit} style={styles.headerExitButton}>
+          <Feather name="log-out" size={18} color="#FF6B1A" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         
+        {/* Botón de Salida Destacado: Dejar Solicitud Abierta */}
+        <TouchableOpacity style={styles.leaveOpenCard} onPress={handleLeaveOpenAndExit}>
+          <Feather name="globe" size={20} color="#FF6B1A" style={{ marginRight: 10 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.leaveOpenTitle}>DEJAR SOLICITUD ABIERTA PARA TODOS</Text>
+            <Text style={styles.leaveOpenSubtitle}>Cualquier técnico disponible podrá tomarla desde su feed</Text>
+          </View>
+          <Feather name="arrow-right" size={18} color="#FF6B1A" />
+        </TouchableOpacity>
+
         {/* Opción Rápida */}
         <TouchableOpacity 
           style={styles.quickOptionCard}
@@ -185,9 +203,14 @@ const styles = StyleSheet.create({
   backButton: { padding: 5, marginLeft: -5 },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   headerSubtitle: { fontSize: 9, fontWeight: '800', color: '#9CA8B6', letterSpacing: 1.5, marginTop: 4, textTransform: 'uppercase' },
+  headerExitButton: { padding: 8, backgroundColor: '#FFF7ED', borderRadius: 20, borderWidth: 1, borderColor: '#FFD8BE' },
   
   scrollContainer: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 },
   
+  leaveOpenCard: { flexDirection: 'row', backgroundColor: '#FFF7ED', borderWidth: 1.5, borderColor: '#FF6B1A', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 20, shadowColor: '#FF6B1A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
+  leaveOpenTitle: { fontSize: 10, fontWeight: '900', color: '#FF6B1A', letterSpacing: 1, marginBottom: 2 },
+  leaveOpenSubtitle: { fontSize: 11, color: '#9A3412', fontWeight: '500' },
+
   quickOptionCard: { flexDirection: 'row', backgroundColor: '#0A192F', padding: 25, borderRadius: 8, alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, shadowColor: '#0A192F', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 5 },
   quickOptionTitle: { fontSize: 9, color: '#9CA8B6', fontWeight: '800', letterSpacing: 1.5, marginBottom: 5 },
   quickOptionSubtitle: { fontSize: 18, color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic' },
@@ -244,6 +267,6 @@ const styles = StyleSheet.create({
   modalButtonsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   modalCancelBtn: { flex: 1, paddingVertical: 16, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 4, marginRight: 10 },
   modalCancelBtnText: { fontSize: 10, fontWeight: '800', color: '#7A8C9E', letterSpacing: 1.5 },
-  modalSelectBtn: { flex: 1, paddingVertical: 16, alignItems: 'center', backgroundColor: '#0A192F', borderRadius: 4 },
+  modalSelectBtn: { height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF6B1A' },
   modalSelectBtnText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1.5 },
 });

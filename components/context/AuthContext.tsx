@@ -7,9 +7,7 @@ import { Platform } from 'react-native';
 
 export const BASE_URL = 
   process.env.EXPO_PUBLIC_API_URL || 
-  (Platform.OS === 'web' && typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    ? 'http://localhost:3000'
-    : 'http://192.168.8.203:3000');
+  'http://192.168.1.97:3000';
 
 type RequestOptions = {
   headers?: Record<string, string>;
@@ -103,33 +101,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Restaurar sesión al iniciar la app
-  useEffect(() => {
-    const loadSession = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem('@user_data');
-        const storedToken = await AsyncStorage.getItem('@user_token');
+    // Restaurar sesión al iniciar la app
+    useEffect(() => {
+      const loadSession = async () => {
+        try {
+          const storedUser = await AsyncStorage.getItem('@user_data');
+          const storedToken = await AsyncStorage.getItem('@user_token');
 
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+
+            const isTechnician = parsedUser?.id_rol === 2 || parsedUser?.perfil === 'tecnico' || parsedUser?.rol === 'tecnico';
+            const isClient = parsedUser?.id_rol === 1 || parsedUser?.perfil === 'cliente' || parsedUser?.rol === 'cliente';
+
+            // Cargar solicitudes según el rol correspondiente
+            if (storedToken) {
+              if (isTechnician) {
+                try {
+                  const { getTechnicianRequests } = await import('../../services/requestsApi');
+                  await getTechnicianRequests();
+                } catch (error) {
+                  console.log('Error al precargar solicitudes de técnico:', error);
+                }
+              } else if (isClient) {
+                try {
+                  const { getClientRequests } = await import('../../services/requestsApi');
+                  await getClientRequests();
+                } catch (error) {
+                  console.log('Error al precargar solicitudes de cliente:', error);
+                }
+              }
+            }
+          }
+
+          if (storedToken) {
+            setToken(storedToken);
+            api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+          }
+        } catch (error) {
+          console.error('Error restaurando sesión:', error);
+        } finally {
+          setIsLoading(false);
         }
+      };
 
-        if (storedToken) {
-          setToken(storedToken);
-          api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        }
-      } catch (error) {
-        console.error('Error restaurando sesión:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSession();
-  }, []);
+      loadSession();
+    }, []);
 
   const login = async (userData: any, token?: string) => {
     try {
+      await AsyncStorage.multiRemove(['@user_data', '@user_token']);
       await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
       if (token) {
         await AsyncStorage.setItem('@user_token', token);
@@ -141,6 +163,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Redireccionar basado en el rol
       const destination = userData.id_rol === 2 ? '/tech-dashboard' : '/client-dashboard';
       await router.replace(destination as any);
+
+      // Registrar Expo Push Token en segundo plano
+      (async () => {
+        try {
+          const Notifications = await import('expo-notifications');
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          let finalStatus = existingStatus;
+          if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+          if (finalStatus === 'granted') {
+            const tokenData = await Notifications.getExpoPushTokenAsync();
+            if (tokenData?.data) {
+              const { registerPushToken } = await import('../../services/requestsApi');
+              await registerPushToken(tokenData.data);
+            }
+          }
+        } catch (err) {
+          console.log('Error registrando push token:', err);
+        }
+      })();
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
     }
@@ -156,8 +200,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.warn('No se pudo revocar la sesión en el servidor:', srvError);
         }
       }
-      await AsyncStorage.removeItem('@user_data');
-      await AsyncStorage.removeItem('@user_token');
+      await AsyncStorage.multiRemove(['@user_data', '@user_token']);
       delete api.defaults.headers.common['Authorization'];
       setUser(null);
       setToken(null);

@@ -1,18 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
-  Platform
+  Platform,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { getBilletera, Billetera } from '../services/walletApi';
 
 export default function TechWallet() {
   const router = useRouter();
+  const [billetera, setBilletera] = useState<Billetera | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const loadWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getBilletera();
+      setBilletera(data);
+    } catch (error: any) {
+      console.error('Error al cargar la billetera:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadWallet();
+  }, [loadWallet]);
+
+
+  const formatSaldo = (saldo: string | number | undefined) => {
+    const val = typeof saldo === 'string' ? parseFloat(saldo) : saldo || 0;
+    return `$${val.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const maskedClabe = (clabe: string | null | undefined) => {
+    if (!clabe || clabe.length < 4) return 'Sin cuenta registrada';
+    return `CLABE **** ${clabe.slice(-4)}`;
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -33,7 +65,11 @@ export default function TechWallet() {
             <Feather name="info" size={14} color="#7A8C9E" />
           </View>
           <View style={styles.balanceAmountRow}>
-            <Text style={styles.balanceAmount}>$1,420.00</Text>
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.balanceAmount}>{formatSaldo(billetera?.saldo_actual)}</Text>
+            )}
             <Text style={styles.balanceCurrency}>MXN</Text>
           </View>
           <TouchableOpacity 
@@ -49,7 +85,9 @@ export default function TechWallet() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>CUENTA DE DEPÓSITO</Text>
           <TouchableOpacity onPress={() => router.push('/tech-bank-account' as any)}>
-            <Text style={styles.changeLink}>CAMBIAR</Text>
+            <Text style={styles.changeLink}>
+              {billetera?.clabe_interbancaria ? 'CAMBIAR' : 'REGISTRAR'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -59,22 +97,43 @@ export default function TechWallet() {
               <Feather name="credit-card" size={18} color="#0A192F" />
             </View>
             <View>
-              <Text style={styles.accountName}>BBVA Bancomer</Text>
-              <Text style={styles.accountClabe}>CLABE **** 5678</Text>
+              <Text style={styles.accountName}>
+                {billetera?.clabe_interbancaria ? 'Cuenta Bancaria' : 'Sin Cuenta'}
+              </Text>
+              <Text style={styles.accountClabe}>{maskedClabe(billetera?.clabe_interbancaria)}</Text>
             </View>
           </View>
-          <View style={styles.activeBadge}>
-            <View style={styles.activeDot} />
-            <Text style={styles.activeText}>ACTIVA</Text>
-          </View>
+          {billetera?.clabe_interbancaria ? (
+            <View style={styles.activeBadge}>
+              <View style={styles.activeDot} />
+              <Text style={styles.activeText}>ACTIVA</Text>
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={styles.registerBadge}
+              onPress={() => router.push('/tech-bank-account' as any)}
+            >
+              <Text style={styles.registerBadgeText}>REGISTRAR</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        <TouchableOpacity 
+          style={styles.bankActionButton}
+          onPress={() => router.push('/tech-bank-account' as any)}
+        >
+          <Feather name="edit-3" size={14} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.bankActionButtonText}>
+            {billetera?.clabe_interbancaria ? 'EDITAR CUENTA BANCARIA' : 'REGISTRAR CUENTA BANCARIA'}
+          </Text>
+        </TouchableOpacity>
+
         <Text style={styles.accountNote}>Las transferencias pueden tardar hasta 24 hrs hábiles.</Text>
 
         {/* Recent Transactions */}
         <Text style={[styles.sectionTitle, { marginTop: 30, marginBottom: 20 }]}>ÚLTIMOS MOVIMIENTOS</Text>
 
         <View style={styles.transactionList}>
-          {/* Transaction 1 */}
           <View style={styles.transactionItem}>
             <View style={styles.transactionLeft}>
               <View style={[styles.txIconWrapper, { backgroundColor: '#ECFDF5', borderColor: '#D1FAE5' }]}>
@@ -82,53 +141,15 @@ export default function TechWallet() {
               </View>
               <View>
                 <Text style={styles.txTitle}>Pago de Servicio</Text>
-                <Text style={styles.txSubtitle}>#CK-0901 • Juan Pérez</Text>
+                <Text style={styles.txSubtitle}>#CK-0901 • Servicio Completado</Text>
               </View>
             </View>
             <View style={styles.transactionRight}>
               <Text style={[styles.txAmount, { color: '#10B981' }]}>+$428.00</Text>
-              <Text style={styles.txDate}>AYER</Text>
-            </View>
-          </View>
-
-          {/* Transaction 2 */}
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionLeft}>
-              <View style={[styles.txIconWrapper, { backgroundColor: '#ECFDF5', borderColor: '#D1FAE5' }]}>
-                <Feather name="plus" size={16} color="#10B981" />
-              </View>
-              <View>
-                <Text style={styles.txTitle}>Compensación Cancelación</Text>
-                <Text style={styles.txSubtitle}>#REQ-8821 • María G.</Text>
-              </View>
-            </View>
-            <View style={styles.transactionRight}>
-              <Text style={[styles.txAmount, { color: '#10B981' }]}>+$50.00</Text>
-              <Text style={styles.txDate}>12 FEB</Text>
-            </View>
-          </View>
-
-          {/* Transaction 3 */}
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionLeft}>
-              <View style={styles.txIconWrapper}>
-                <Feather name="arrow-down" size={16} color="#7A8C9E" />
-              </View>
-              <View>
-                <Text style={styles.txTitle}>Retiro a Cuenta BBVA</Text>
-                <Text style={styles.txSubtitle}>Transferencia SPEI</Text>
-              </View>
-            </View>
-            <View style={styles.transactionRight}>
-              <Text style={styles.txAmount}>-$2,000.00</Text>
-              <Text style={styles.txDate}>10 FEB</Text>
+              <Text style={styles.txDate}>RECIENTE</Text>
             </View>
           </View>
         </View>
-
-        <TouchableOpacity style={styles.viewAllButton}>
-          <Text style={styles.viewAllText}>VER TODOS LOS MOVIMIENTOS</Text>
-        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
@@ -156,7 +177,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 9, fontWeight: '800', color: '#9CA8B6', letterSpacing: 1.5 },
   changeLink: { fontSize: 9, fontWeight: '800', color: '#0A192F', letterSpacing: 1.5 },
 
-  accountCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F4F8', borderRadius: 8, padding: 20, marginBottom: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 5, elevation: 1 },
+  accountCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F4F8', borderRadius: 8, padding: 20, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 5, elevation: 1 },
   accountCardLeft: { flexDirection: 'row', alignItems: 'center' },
   accountIconWrapper: { width: 40, height: 40, borderRadius: 8, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: '#F0F4F8' },
   accountName: { fontSize: 13, fontWeight: '800', color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic', marginBottom: 4 },
@@ -165,6 +186,12 @@ const styles = StyleSheet.create({
   activeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981', marginRight: 4 },
   activeText: { fontSize: 7, fontWeight: '800', color: '#10B981', letterSpacing: 1.5 },
   
+  registerBadge: { backgroundColor: '#0A192F', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4 },
+  registerBadgeText: { fontSize: 8, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1 },
+
+  bankActionButton: { flexDirection: 'row', backgroundColor: '#0A192F', paddingVertical: 14, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  bankActionButtonText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1 },
+
   accountNote: { fontSize: 8, color: '#9CA8B6', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic' },
 
   transactionList: { marginBottom: 20 },
@@ -176,7 +203,4 @@ const styles = StyleSheet.create({
   transactionRight: { alignItems: 'flex-end' },
   txAmount: { fontSize: 12, fontWeight: '800', color: '#0A192F', marginBottom: 4 },
   txDate: { fontSize: 8, fontWeight: '800', color: '#9CA8B6', letterSpacing: 1.5, textTransform: 'uppercase' },
-
-  viewAllButton: { alignItems: 'center', paddingVertical: 15, marginTop: 10 },
-  viewAllText: { fontSize: 9, fontWeight: '800', color: '#7A8C9E', letterSpacing: 1.5 },
 });

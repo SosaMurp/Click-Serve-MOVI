@@ -1,33 +1,176 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Location from 'expo-location';
+import { api } from './context/AuthContext';
+import { SafeMapWrapper } from './SafeMapWrapper';
+import { getCurrentLocation, reverseGeocode, FALLBACK_LOCATION } from '../services/locationService';
 
 export default function EditAddress() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ id?: string }>();
+  const addressId = params.id || '1';
+
+  const [etiqueta, setEtiqueta] = useState('Casa');
+  const [calle, setCalle] = useState('Av. Lázaro Cárdenas 1520');
+  const [interior, setInterior] = useState('48');
+  const [cp, setCp] = useState('60950');
+  const [saving, setSaving] = useState(false);
+
+  // Ubicación del mapa
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number }>(FALLBACK_LOCATION);
+  const [loadingGps, setLoadingGps] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getCurrentLocation();
+      setCoords(res.coords);
+    })();
+  }, []);
+
+  const handleGpsCenter = async () => {
+    setLoadingGps(true);
+    try {
+      const { coords: gpsCoords, isFallback } = await getCurrentLocation();
+      setCoords(gpsCoords);
+
+      // Geocodificación inversa
+      const [addressObj] = await Location.reverseGeocodeAsync(gpsCoords);
+      if (addressObj) {
+        if (addressObj.street) {
+          const stNum = addressObj.streetNumber ? ` #${addressObj.streetNumber}` : '';
+          setCalle(`${addressObj.street}${stNum}`);
+        }
+        if (addressObj.postalCode) {
+          setCp(addressObj.postalCode);
+        }
+      } else {
+        const fullAddr = await reverseGeocode(gpsCoords);
+        if (fullAddr) setCalle(fullAddr);
+      }
+
+      if (isFallback) {
+        Alert.alert('Aviso', 'No se concedieron permisos de GPS. Mostrando ubicación por defecto.');
+      }
+    } catch (err: any) {
+      console.warn('Error al obtener GPS:', err);
+    } finally {
+      setLoadingGps(false);
+    }
+  };
+
+  const handleLocationSelect = async (newCoords: { latitude: number; longitude: number }) => {
+    setCoords(newCoords);
+    try {
+      const [addressObj] = await Location.reverseGeocodeAsync(newCoords);
+      if (addressObj) {
+        if (addressObj.street) {
+          const stNum = addressObj.streetNumber ? ` #${addressObj.streetNumber}` : '';
+          setCalle(`${addressObj.street}${stNum}`);
+        }
+        if (addressObj.postalCode) {
+          setCp(addressObj.postalCode);
+        }
+      }
+    } catch (err) {
+      console.warn('Error en reverse geocode:', err);
+    }
+  };
+
+  const handleDeleteAddress = () => {
+    Alert.alert(
+      '¿Eliminar dirección?',
+      'Esta acción eliminará la ubicación de tu cuenta.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await api.delete(`/api/direcciones/${addressId}`);
+              if (res && res.status >= 400) {
+                throw new Error(res.data?.error || `Error HTTP ${res.status}`);
+              }
+              Alert.alert('Éxito', 'La dirección se ha eliminado correctamente.', [
+                {
+                  text: 'OK',
+                  onPress: () => router.back(),
+                },
+              ]);
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Error de conexión al eliminar la dirección.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleSaveAddress = async () => {
+    if (!calle.trim()) {
+      Alert.alert('Campo requerido', 'Por favor ingresa la calle.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await api.post('/api/direcciones', {
+        etiqueta,
+        calle,
+        numero: interior,
+        interior,
+        colonia: 'Centro',
+        cp,
+        latitud: coords.latitude,
+        longitud: coords.longitude,
+      });
+
+      if (res && res.status >= 400) {
+        throw new Error(res.data?.error || `Error HTTP ${res.status}`);
+      }
+
+      Alert.alert('Éxito', 'Dirección guardada correctamente.', [
+        {
+          text: 'OK',
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Error de conexión al guardar la dirección.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
+      {/* Header Reorganizado */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <Feather name="x" size={24} color="#0A192F" />
+          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton} activeOpacity={0.8}>
+            <Feather name="arrow-left" size={24} color="#0F172A" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Editar Ubicación</Text>
+          <View>
+            <Text style={styles.headerTitle}>Registrar Dirección</Text>
+            <Text style={styles.headerSubtitle}>CONFIRMA O AJUSTA TU UBICACIÓN</Text>
+          </View>
         </View>
-        <TouchableOpacity>
-          <Text style={styles.deleteText}>ELIMINAR</Text>
+        <TouchableOpacity onPress={handleDeleteAddress} activeOpacity={0.8} style={styles.deleteButton}>
+          <Feather name="trash-2" size={18} color="#EF4444" />
         </TouchableOpacity>
       </View>
 
@@ -37,27 +180,62 @@ export default function EditAddress() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           
-          {/* Map Area */}
-          <View style={styles.mapArea}>
-            <View style={styles.mapMarkerContainer}>
-              <View style={styles.mapMarkerBadge}>
-                <Text style={styles.mapMarkerText}>TÚ ESTÁS AQUÍ</Text>
-              </View>
-              <Feather name="map-pin" size={32} color="#0A192F" />
+          {/* Tarjeta con Mini-Mapa Interactivo OpenStreetMap */}
+          <View style={styles.mapCard}>
+            <View style={styles.mapCardHeader}>
+              <Feather name="map-pin" size={16} color="#FF6B1A" style={{ marginRight: 6 }} />
+              <Text style={styles.mapCardTitle}>UBICACIÓN EN MAPA (OPENSTREETMAP)</Text>
             </View>
-            <TouchableOpacity style={styles.targetButton}>
-              <Feather name="crosshair" size={18} color="#0A192F" />
+
+            <View style={styles.mapContainer}>
+              <SafeMapWrapper
+                height={200}
+                latitude={coords.latitude}
+                longitude={coords.longitude}
+                fallbackTitle="Mini-Mapa de Ubicación"
+                fallbackSubtitle="Toca en el mapa para ajustar el punto exacto."
+                interactive={true}
+                onLocationSelect={handleLocationSelect}
+                markers={[
+                  {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                    title: 'Ubicación seleccionada',
+                    description: calle,
+                    color: '#FF6B1A',
+                  },
+                ]}
+              />
+            </View>
+
+            {/* Espaciador y Botón Prominente para Usar Ubicación Actual */}
+            <TouchableOpacity 
+              style={[styles.useLocationButton, loadingGps && { opacity: 0.7 }]} 
+              activeOpacity={0.8}
+              onPress={handleGpsCenter}
+              disabled={loadingGps}
+            >
+              {loadingGps ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Feather name="crosshair" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                  <Text style={styles.useLocationButtonText}>USAR MI UBICACIÓN ACTUAL</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
-          {/* Form */}
-          <View style={styles.formContainer}>
+          {/* Formulario */}
+          <View style={styles.card}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>ETIQUETA</Text>
               <TextInput 
                 style={styles.input} 
-                defaultValue="Casa"
-                placeholderTextColor="#C4CDD5"
+                value={etiqueta}
+                onChangeText={setEtiqueta}
+                placeholder="Ej. Casa, Trabajo, Oficina"
+                placeholderTextColor="#94A3B8"
               />
             </View>
 
@@ -65,27 +243,33 @@ export default function EditAddress() {
               <Text style={styles.label}>CALLE Y NÚMERO</Text>
               <TextInput 
                 style={styles.input} 
-                defaultValue="Av. Lázaro Cárdenas 1520"
-                placeholderTextColor="#C4CDD5"
+                value={calle}
+                onChangeText={setCalle}
+                placeholder="Calle y número exterior"
+                placeholderTextColor="#94A3B8"
               />
             </View>
 
             <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1, marginRight: 15 }]}>
+              <View style={[styles.inputGroup, { flex: 1, marginRight: 14 }]}>
                 <Text style={styles.label}>INTERIOR / DEPTO</Text>
                 <TextInput 
                   style={styles.input} 
-                  defaultValue="48"
-                  placeholderTextColor="#C4CDD5"
+                  value={interior}
+                  onChangeText={setInterior}
+                  placeholder="Ej. 4B"
+                  placeholderTextColor="#94A3B8"
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1 }]}>
                 <Text style={styles.label}>C.P.</Text>
                 <TextInput 
                   style={styles.input} 
-                  defaultValue="60950"
+                  value={cp}
+                  onChangeText={setCp}
                   keyboardType="numeric"
-                  placeholderTextColor="#C4CDD5"
+                  placeholder="Código Postal"
+                  placeholderTextColor="#94A3B8"
                 />
               </View>
             </View>
@@ -93,10 +277,19 @@ export default function EditAddress() {
 
         </ScrollView>
         
-        {/* Update Button */}
+        {/* Botón Guardar / Actualizar */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.updateButton} onPress={() => router.back()}>
-            <Text style={styles.updateButtonText}>ACTUALIZAR DIRECCIÓN</Text>
+          <TouchableOpacity 
+            style={[styles.updateButton, saving && { opacity: 0.7 }]} 
+            onPress={handleSaveAddress}
+            disabled={saving}
+            activeOpacity={0.8}
+          >
+            {saving ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.updateButtonText}>GUARDAR / ACTUALIZAR DIRECCIÓN</Text>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -105,24 +298,162 @@ export default function EditAddress() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingTop: 18, 
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0'
+  },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
-  closeButton: { padding: 5, marginLeft: -5, marginRight: 10 },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  deleteText: { fontSize: 9, fontWeight: '800', color: '#FF6B6B', letterSpacing: 1 },
-  scrollContainer: { paddingBottom: 20 },
-  mapArea: { height: 250, backgroundColor: '#E1E8ED', justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  mapMarkerContainer: { alignItems: 'center', marginTop: -20 },
-  mapMarkerBadge: { backgroundColor: '#0A192F', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4, marginBottom: 5 },
-  mapMarkerText: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1 },
-  targetButton: { position: 'absolute', bottom: 15, right: 15, width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 3 },
-  formContainer: { padding: 25 },
-  inputGroup: { marginBottom: 25 },
-  label: { fontSize: 9, fontWeight: '800', color: '#7A8C9E', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' },
-  input: { fontSize: 16, color: '#0A192F', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', borderBottomWidth: 1, borderBottomColor: '#F0F4F8', paddingVertical: 8 },
+  closeButton: { padding: 4, marginRight: 12 },
+  headerTitle: { 
+    fontSize: 18, 
+    fontWeight: '800', 
+    color: '#0F172A', 
+    lineHeight: 24,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' 
+  },
+  headerSubtitle: { 
+    fontSize: 10, 
+    fontWeight: '800', 
+    color: '#64748B', 
+    letterSpacing: 1, 
+    marginTop: 2,
+    lineHeight: 14,
+  },
+  deleteButton: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    backgroundColor: '#FEF2F2', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FEE2E2'
+  },
+  
+  scrollContainer: { padding: 18 },
+
+  /* Tarjeta con Mini Mapa */
+  mapCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2
+  },
+  mapCardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  mapCardTitle: { 
+    fontSize: 11, 
+    fontWeight: '800', 
+    color: '#64748B', 
+    letterSpacing: 1.2,
+    lineHeight: 16,
+  },
+  mapContainer: { 
+    height: 200, 
+    borderRadius: 16, 
+    overflow: 'hidden', 
+    borderWidth: 1, 
+    borderColor: '#E2E8F0', 
+    backgroundColor: '#F8FAFC',
+    marginBottom: 16
+  },
+
+  /* Botón Ancho y Prominente */
+  useLocationButton: {
+    flexDirection: 'row',
+    backgroundColor: '#FF6B1A',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FF6B1A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3
+  },
+  useLocationButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+    lineHeight: 18,
+  },
+
+  card: { 
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 16, 
+    borderWidth: 1, 
+    borderColor: '#E2E8F0', 
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2
+  },
+  inputGroup: { marginBottom: 16 },
+  label: { 
+    fontSize: 10, 
+    fontWeight: '800', 
+    color: '#94A3B8', 
+    letterSpacing: 1.5, 
+    marginBottom: 8, 
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  input: { 
+    fontSize: 14, 
+    color: '#0F172A', 
+    backgroundColor: '#F8FAFC', 
+    borderWidth: 1, 
+    borderColor: '#E2E8F0', 
+    borderRadius: 12, 
+    paddingHorizontal: 14, 
+    paddingVertical: 12,
+    fontWeight: '600'
+  },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
-  footer: { paddingHorizontal: 25, paddingVertical: 20, borderTopWidth: 1, borderTopColor: '#F0F4F8', backgroundColor: '#FFFFFF' },
-  updateButton: { backgroundColor: '#0A192F', paddingVertical: 18, borderRadius: 4, alignItems: 'center' },
-  updateButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  footer: { 
+    paddingHorizontal: 20, 
+    paddingVertical: 16, 
+    borderTopWidth: 1, 
+    borderTopColor: '#E2E8F0', 
+    backgroundColor: '#FFFFFF' 
+  },
+  updateButton: { 
+    backgroundColor: '#0F172A', 
+    paddingVertical: 14, 
+    paddingHorizontal: 16,
+    borderRadius: 14, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  updateButtonText: { 
+    color: '#FFFFFF', 
+    fontSize: 12, 
+    fontWeight: '800', 
+    letterSpacing: 1.5,
+    lineHeight: 18,
+  },
 });
