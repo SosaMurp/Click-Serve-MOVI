@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Banner, Button, EmptyState, Screen, SectionHeader, SkeletonList, space, Tabs, Text } from '@/src/design';
-import { errorMessage } from '@/src/api/client';
+import { errorMessage, fileUrl } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
 import type { Solicitud } from '@/src/api/types';
 import { hapticSuccess } from '@/src/lib/media';
@@ -72,7 +72,7 @@ export default function Trabajos() {
       inTabs
       refreshing={lista.refreshing}
       onRefresh={() => { lista.refresh(); resumen.reload(); }}
-      header={<PanelHeader nombre={user?.nombre} apellido={user?.apellido} resumen={resumen.data} />}
+      header={<PanelHeader nombre={user?.nombre} apellido={user?.apellido} fotoUrl={fileUrl(user?.foto_url)} onAvatar={() => router.push('/perfil')} resumen={resumen.data} />}
     >
       {user && !user.aprobado ? (
         <Banner tone="warning" title="Tu cuenta está en revisión" body="Podrás aceptar trabajos cuando aprobemos tus documentos." action={<Button title="Ver verificación" variant="text" onPress={() => router.push('/verificacion')} />} style={styles.gap} />

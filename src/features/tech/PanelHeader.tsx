@@ -2,14 +2,15 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { color, radius, space, Text } from '../../design';
+import { Avatar, color, radius, space, Text } from '../../design';
 import type { ResumenTecnico } from '../../api/types';
 import { formatMoney } from '../../lib/format';
 import { useAvailability } from '../../state/availability';
 
 // Encabezado del Panel de Trabajo (referencia): título, píldora ONLINE/OFFLINE que enciende y apaga
 // la disponibilidad (RF-21) y "TÉC. NOMBRE · LÁZARO CÁRDENAS". Debajo, las cifras de la semana (RF-111/122).
-export function PanelHeader({ nombre, apellido, resumen }: { nombre?: string | null; apellido?: string | null; resumen: ResumenTecnico | null }) {
+// El avatar a la derecha lleva al perfil (RF-86).
+export function PanelHeader({ nombre, apellido, fotoUrl, onAvatar, resumen }: { nombre?: string | null; apellido?: string | null; fotoUrl?: string | null; onAvatar: () => void; resumen: ResumenTecnico | null }) {
   const insets = useSafeAreaInsets();
   const { disponible, cambiando, setDisponible } = useAvailability();
   const quien = [nombre, apellido ? `${apellido.trim()[0]}.` : ''].filter(Boolean).join(' ');
@@ -35,6 +36,9 @@ export function PanelHeader({ nombre, apellido, resumen }: { nombre?: string | n
           >
             {cambiando ? <ActivityIndicator size="small" color={disponible ? color.successInk : color.inkSoft} /> : <View style={[styles.dot, { backgroundColor: disponible ? color.success : color.inkMuted }]} />}
             <Text variant="overline" style={{ color: disponible ? color.successInk : color.inkSoft }}>{disponible ? 'Online' : 'Offline'}</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Ir a mi perfil" onPress={onAvatar} hitSlop={6}>
+            <Avatar uri={fotoUrl} nombre={nombre} apellido={apellido} size={40} />
           </Pressable>
         </View>
         <Text variant="overline" tone="muted">Téc. {quien} · Lázaro Cárdenas</Text>

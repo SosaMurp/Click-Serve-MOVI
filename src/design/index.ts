@@ -18,5 +18,6 @@ export { Sheet } from './Sheet';
 export { makeNavigationBar } from './NavigationBar';
 export type { TabMeta, TabBarProps } from './NavigationBar';
 export { Steps } from './Steps';
+export { Collapsible } from './Collapsible';
 export type { Step } from './Steps';
 export { DateField, TimeField, Calendar, Folio, Money } from './Pickers';

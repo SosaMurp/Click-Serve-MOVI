@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { AppBar, Avatar, Button, color, IconName, ListItem, Pill, radius, Screen, SectionHeader, space, Surface, Text } from '../../design';
+import { AppBar, Avatar, Button, Collapsible, color, IconName, ListItem, Pill, radius, Screen, SectionHeader, space, Surface, Text } from '../../design';
+import { BigAction } from '../orders/BigAction';
 import { fileUrl } from '../../api/client';
 import { useSession } from '../../state/session';
 import { dialog } from '../../ui/dialog';
@@ -10,7 +11,8 @@ import { dialog } from '../../ui/dialog';
 type Item = { icon: IconName; title: string; subtitle?: string; href: string; tone?: 'brand' | 'accent' | 'success' | 'warning' | 'danger' | 'neutral'; trailingText?: string };
 
 // Perfil compartido por cliente y técnico: tarjeta con avatar, métricas y la lista de ajustes.
-export function ProfileScreen({ metrics, sections }: { metrics?: React.ReactNode; sections: { title: string; items: Item[] }[] }) {
+// `simple` (cliente, enfoque CILIM): lo de uso diario en filas grandes y el resto en "Más opciones".
+export function ProfileScreen({ metrics, sections, simple }: { metrics?: React.ReactNode; sections: { title: string; items: Item[] }[]; simple?: boolean }) {
   const router = useRouter();
   const { user, signOut } = useSession();
   if (!user) return null;
@@ -39,6 +41,36 @@ export function ProfileScreen({ metrics, sections }: { metrics?: React.ReactNode
       ],
     },
   ];
+
+  if (simple) {
+    const all = [...sections, ...common].flatMap((s) => s.items);
+    const daily = new Set(['/seguridad', '/ayuda', ...sections.flatMap((s) => s.items.map((i) => i.href))]);
+    return (
+      <Screen inTabs header={<AppBar title="Mi cuenta" back={false} />}>
+        <View style={styles.simpleHead}>
+          <Avatar uri={fileUrl(user.foto_url)} nombre={user.nombre} apellido={user.apellido} size={72} />
+          <View style={styles.flex}>
+            <Text variant="headline" numberOfLines={2}>{user.nombre} {user.apellido}</Text>
+            <Text variant="bodyLg" tone="soft" numberOfLines={1}>{user.correo}</Text>
+          </View>
+        </View>
+        {!user.aprobado ? <Pill label="Tu cuenta está en revisión" tone="warning" icon="clock" style={styles.simplePill} /> : null}
+        <BigAction icon="user" title="Mis datos" subtitle="Nombre, teléfono y foto" onPress={() => router.push('/datos-personales')} />
+        {all.filter((it) => daily.has(it.href)).map((it) => (
+          <BigAction key={it.href} icon={it.icon} title={it.title} subtitle={it.subtitle} onPress={() => router.push(it.href as never)} />
+        ))}
+        <Collapsible title="Más opciones" style={styles.simpleMore}>
+          <Surface padded={false}>
+            {all.filter((it) => !daily.has(it.href)).map((it) => (
+              <ListItem key={it.href} icon={it.icon} iconTone={it.tone || 'neutral'} title={it.title} subtitle={it.subtitle} onPress={() => router.push(it.href as never)} />
+            ))}
+          </Surface>
+        </Collapsible>
+        <Button title="Cerrar sesión" variant="outlined" icon="log-out" full size="xl" onPress={logout} style={styles.logout} />
+        <Text variant="caption" tone="muted" align="center" style={styles.version}>Click & Serve · versión {Constants.expoConfig?.version || '1.0.0'}</Text>
+      </Screen>
+    );
+  }
 
   return (
     <Screen inTabs header={<AppBar title="Perfil" back={false} />}>
@@ -81,8 +113,12 @@ export function ProfileScreen({ metrics, sections }: { metrics?: React.ReactNode
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  simpleHead: { flexDirection: 'row', alignItems: 'center', gap: space.lg, marginBottom: space.lg },
+  simplePill: { marginBottom: space.lg },
+  simpleMore: { marginTop: space.sm },
   card: { overflow: 'hidden' },
-  band: { height: 72, backgroundColor: color.brandSoft },
+  band: { height: 72, backgroundColor: color.groundAlt },
   cardBody: { alignItems: 'center', paddingHorizontal: space.lg, paddingBottom: space.lg, gap: 4 },
   avatarWrap: { marginTop: -48, marginBottom: space.sm, borderRadius: radius.full },
   pills: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm, marginTop: space.sm },
