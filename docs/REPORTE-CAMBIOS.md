@@ -281,7 +281,8 @@ Algunos dependen de infraestructura que no existe en un entorno local (TLS 1.3, 
 npm install
 cp .env.example .env        # llenar DB_*, JWT_SECRET, FILES_SECRET; NODE_ENV=development para pruebas locales
 npm start                   # aplica migraciones y escucha en PORT
-npm test                    # requiere una base vacía clickyserve_test → 144 pruebas
+npm test                    # requiere una base vacía clickyserve_test → 147 pruebas
+npm run db:seed             # cuentas de prueba (solo desarrollo; ver README del backend)
 ```
 En desarrollo, los códigos de verificación se imprimen en la consola del servidor y los cobros son sandbox.
 
@@ -294,7 +295,7 @@ npx tsc --noEmit            # chequeo de tipos
 npm run web                 # http://localhost:8081 · o `npm start` y Expo Go / dev client
 ```
 
-**Cuentas de prueba** (sembradas por `scripts/local-dev-setup.sql`, ya aprobadas): `cliente.prueba@clickserve.test` y `tecnico.prueba@clickserve.test`. Las contraseñas están en ese script. **Tarjetas de prueba:** `4242 4242 4242 4242` (aprobada) y `4000 0000 0000 0002` (rechazada), con cualquier fecha futura y CVV.
+**Cuentas de prueba** (las crea `npm run db:seed` en el backend, ya aprobadas; antes `scripts/local-dev-setup.sql`): `cliente.prueba@clickserve.test` y `tecnico.prueba@clickserve.test`. Las contraseñas están en ese script. **Tarjetas de prueba:** `4242 4242 4242 4242` (aprobada) y `4000 0000 0000 0002` (rechazada), con cualquier fecha futura y CVV.
 
 **Recorrido sugerido:**
 1. Como cliente, crea una solicitud con mapa y elige un técnico.
@@ -307,7 +308,7 @@ npm run web                 # http://localhost:8081 · o `npm start` y Expo Go /
 
 ## 9. Cómo aplicar el parche del backend
 
-Los 28 parches están en `Click-Serve-Back\parches\` (y en `entregables\parches\`). No incluyen `.env`, `node_modules` ni `scripts/local-*`. `main` versiona `node_modules`, y las dependencias nuevas son `ws`, `jose`, `sharp`, `tesseract.js` y `@tesseract.js-data/spa` y `eng`, así que hay que correr `npm install` después de aplicar.
+Los 29 parches están en `Click-Serve-Back\parches\` (y en `entregables\parches\`). No incluyen `.env`, `node_modules` ni `scripts/local-*`. `main` versiona `node_modules`, y las dependencias nuevas son `ws`, `jose`, `sharp`, `tesseract.js` y `@tesseract.js-data/spa` y `eng`, así que hay que correr `npm install` después de aplicar.
 
 ```bash
 cd Click-Serve-Back
@@ -315,7 +316,7 @@ git checkout main && git pull
 git checkout -b requisitos-moviles
 git am parches/*.patch          # aplican limpio sobre main (37b8a1a)
 npm install                     # agrega ws, jose, sharp y tesseract.js
-npm test                        # 144/144 con la base clickyserve_test
+npm test                        # 147/147 con la base clickyserve_test
 ```
 Si `git am` se detiene por un conflicto (por ejemplo, si `main` avanzó), resuélvelo y usa `git am --continue`, o `git am --abort` para volver atrás.
 
@@ -414,7 +415,7 @@ El adaptador `src/services/ineProvider.js` queda apagado sin `INE_PROVIDER` e `I
 ### 11.6 Verificación de esta etapa
 
 - **App:** `npx tsc --noEmit` sin errores; `npm test` 26/26 (estado del cliente, llegada estimada y análisis de cuadros).
-- **Backend:** `npm test` 144/144. Los 28 parches aplican limpio sobre `main` y dejan el mismo árbol que la rama.
+- **Backend:** `npm test` 147/147. Los 29 parches aplican limpio sobre `main` y dejan el mismo árbol que la rama.
 - **Navegador** (375 y 320 px):
   - bienvenida, login, registro, verificación del correo, panel del técnico (Nuevas y En curso con una solicitud real), inicio del cliente, pedir un servicio en 3 pasos (solicitud real creada y cancelada), mis servicios, detalle y cuenta;
   - el link público muestra todo lo nuevo.
@@ -435,4 +436,4 @@ El adaptador `src/services/ineProvider.js` queda apagado sin `INE_PROVIDER` e `I
 
 **App** (`b9f838b..claude/rediseno-simple`): `b275b16` diseño · `f0238b7` plan · `87b9b2e` tokens, componentes y logo · `a8519a0` bienvenida, login, registro y verificación · `e5c803f` panel del técnico · `a4b0bac` inicio del cliente · `cb101b8` pedir servicio en 3 pasos · `f923230` mis servicios, detalle y cuenta · `60ae5c0` captura guiada de la INE · este reporte.
 
-**Backend** (`5fdd2b3..claude/requisitos-moviles`, parches `0024`–`0028`): `9542064` inicio con Google y Apple · `5d8a574` CURP, MRZ y nombres · `be9ce4a` verificación de la INE y registro con tickets · `f52d439` fotos desde 500 px · `d644e26` rechazo de imágenes enormes.
+**Backend** (`5fdd2b3..claude/requisitos-moviles`, parches `0024`–`0029`): `9542064` inicio con Google y Apple · `5d8a574` CURP, MRZ y nombres · `be9ce4a` verificación de la INE y registro con tickets · `f52d439` fotos desde 500 px · `d644e26` rechazo de imágenes enormes · `43f5ea3` seed de cuentas de prueba (`npm run db:seed`) y guía para recrear la base en el README.
