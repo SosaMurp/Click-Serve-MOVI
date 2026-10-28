@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Banner, Button, EmptyState, HomeHeader, Pill, Screen, Segmented, SkeletonList, space, Text } from '@/src/design';
-import { errorMessage, fileUrl } from '@/src/api/client';
+import { Banner, Button, EmptyState, Screen, SectionHeader, SkeletonList, space, Tabs, Text } from '@/src/design';
+import { errorMessage } from '@/src/api/client';
 import { solicitudesApi } from '@/src/api/endpoints';
 import type { Solicitud } from '@/src/api/types';
 import { hapticSuccess } from '@/src/lib/media';
 import { useSession } from '@/src/state/session';
 import { useAvailability } from '@/src/state/availability';
 import { OrderCard } from '@/src/features/orders/OrderCard';
-import { OnlineCard } from '@/src/features/tech/OnlineCard';
+import { PanelHeader } from '@/src/features/tech/PanelHeader';
+import { RequestCard } from '@/src/features/tech/RequestCard';
+import { NextStopCard, ScheduledRow } from '@/src/features/tech/NextStopCard';
 import { useResumenTecnico, useTrabajos, Vista } from '@/src/features/tech/hooks';
 import { dialog } from '@/src/ui/dialog';
 import { toast } from '@/src/ui/toast';
 
-// RF-21/58/111/122/123: panel del técnico. Abre en NUEVAS con contadores por pestaña.
+// RF-21/58/111/122/123: Panel de Trabajo del técnico (referencia). Abre en NUEVAS con contadores por pestaña.
 export default function Trabajos() {
   const router = useRouter();
   const { user } = useSession();
@@ -26,9 +28,13 @@ export default function Trabajos() {
   const items = lista.data?.solicitudes || [];
   const c = lista.data?.contadores || resumen.data?.contadores;
 
-  const open = (s: Solicitud) => router.push(vista === 'nuevas'
-    ? { pathname: '/solicitud/[id]', params: { id: String(s.id_solicitud) } }
-    : { pathname: '/trabajo/[id]', params: { id: String(s.id_solicitud) } });
+  const openRequest = (s: Solicitud) => router.push({ pathname: '/solicitud/[id]', params: { id: String(s.id_solicitud) } });
+  const openJob = (s: Solicitud) => router.push({ pathname: '/trabajo/[id]', params: { id: String(s.id_solicitud) } });
+  // Navegación al domicilio en la app de mapas; sin coordenadas, el detalle del trabajo.
+  const openMap = (s: Solicitud) => {
+    if (s.latitud != null && s.longitud != null) Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${s.latitud},${s.longitud}`);
+    else openJob(s);
+  };
 
   async function accept(s: Solicitud) {
     setBusy(`a${s.id_solicitud}`);
@@ -36,7 +42,7 @@ export default function Trabajos() {
       await solicitudesApi.aceptar(s.id_solicitud);
       hapticSuccess();
       toast.success(`Aceptaste ${s.folio}. Avisa cuando vayas en camino.`);
-      router.push({ pathname: '/trabajo/[id]', params: { id: String(s.id_solicitud) } });
+      openJob(s);
     } catch (e) {
       toast.error(errorMessage(e));
       lista.reload();
@@ -46,7 +52,7 @@ export default function Trabajos() {
   }
 
   async function discard(s: Solicitud) {
-    const ok = await dialog.confirm({ title: '¿Descartar esta solicitud?', message: 'Ya no te aparecerá en la lista.', confirmText: 'Descartar' });
+    const ok = await dialog.confirm({ title: '¿Rechazar esta solicitud?', message: 'Ya no te aparecerá en la lista.', confirmText: 'Rechazar' });
     if (!ok) return;
     setBusy(`d${s.id_solicitud}`);
     try {
@@ -59,81 +65,89 @@ export default function Trabajos() {
     }
   }
 
+  const [siguiente, ...programados] = vista === 'en_curso' ? items : [];
+
   return (
     <Screen
       inTabs
       refreshing={lista.refreshing}
       onRefresh={() => { lista.refresh(); resumen.reload(); }}
-      header={(
-        <HomeHeader
-          nombre={user?.nombre}
-          apellido={user?.apellido}
-          fotoUrl={fileUrl(user?.foto_url)}
-          onAvatar={() => router.push('/perfil')}
-          actions={[
-            { icon: 'map', label: 'Mapa de solicitudes', onPress: () => router.push('/mapa') },
-            { icon: 'bell', label: 'Solicitudes nuevas', onPress: () => setVista('nuevas'), badge: (c?.nuevas || 0) > 0 },
-          ]}
-        />
-      )}
+      header={<PanelHeader nombre={user?.nombre} apellido={user?.apellido} resumen={resumen.data} />}
     >
       {user && !user.aprobado ? (
         <Banner tone="warning" title="Tu cuenta está en revisión" body="Podrás aceptar trabajos cuando aprobemos tus documentos." action={<Button title="Ver verificación" variant="text" onPress={() => router.push('/verificacion')} />} style={styles.gap} />
       ) : null}
 
-      <OnlineCard resumen={resumen.data} />
+      <Tabs<Vista>
+        value={vista}
+        onChange={setVista}
+        options={[
+          { value: 'nuevas', label: 'Nuevas', count: c?.nuevas },
+          { value: 'en_curso', label: 'En curso', count: c?.en_curso },
+          { value: 'historial', label: 'Historial' },
+        ]}
+      />
 
-      <View style={styles.tabs}>
-        <Segmented<Vista>
-          value={vista}
-          onChange={setVista}
-          options={[
-            { value: 'nuevas', label: 'Nuevas', count: c?.nuevas },
-            { value: 'en_curso', label: 'En curso', count: c?.en_curso },
-            { value: 'historial', label: 'Historial' },
-          ]}
-        />
-      </View>
-
-      {lista.loading ? <SkeletonList rows={3} /> : null}
-      {lista.error && !lista.data ? <Banner tone="error" title="No pudimos cargar tus trabajos" body={lista.error} /> : null}
+      {lista.loading ? <View style={styles.top}><SkeletonList rows={2} /></View> : null}
+      {lista.error && !lista.data ? <Banner tone="error" title="No pudimos cargar tus trabajos" body={lista.error} style={styles.top} /> : null}
       {!lista.loading && lista.data && !items.length ? (
         vista === 'nuevas' ? (
           <EmptyState
             icon={disponible ? 'radio' : 'moon'}
             title={disponible ? 'Sin solicitudes por ahora' : 'Estás desconectado'}
-            body={disponible ? 'Te avisaremos en cuanto un cliente cercano pida un servicio de tus especialidades.' : 'Activa el interruptor de arriba para empezar a recibir trabajos.'}
+            body={disponible ? 'Te avisaremos en cuanto un cliente cercano pida un servicio de tus especialidades.' : 'Toca OFFLINE, arriba a la derecha, para empezar a recibir trabajos.'}
           />
         ) : <EmptyState icon={vista === 'en_curso' ? 'tool' : 'archive'} title={vista === 'en_curso' ? 'Sin trabajos en curso' : 'Aún no tienes historial'} />
       ) : null}
 
-      {items.map((s) => (
-        <OrderCard
-          key={s.id_solicitud}
-          s={s}
-          rol="tecnico"
-          onPress={() => open(s)}
-          footer={vista === 'nuevas' ? (
-            <View>
-              {s.propuesta_a_mi ? <Pill label="Te eligieron a ti" tone="accent" icon="star" size="sm" style={styles.prop} /> : null}
-              {s.zona ? <Text variant="caption" tone="muted" style={styles.zona}>Zona aproximada: {s.zona}</Text> : null}
-              <View style={styles.actions}>
-                <Button title="Descartar" variant="outlined" onPress={() => discard(s)} loading={busy === `d${s.id_solicitud}`} disabled={!!busy} style={styles.flex} />
-                <Button title="Aceptar" icon="check" onPress={() => accept(s)} loading={busy === `a${s.id_solicitud}`} disabled={!!busy || !user?.aprobado} style={styles.flex} />
-              </View>
-            </View>
-          ) : undefined}
-        />
-      ))}
+      {vista === 'nuevas' && items.length ? (
+        <>
+          <SectionHeader title="Solicitud recibida" />
+          {items.map((s) => (
+            <RequestCard
+              key={s.id_solicitud}
+              s={s}
+              onOpen={() => openRequest(s)}
+              onAccept={() => accept(s)}
+              onReject={() => discard(s)}
+              busy={busy === `a${s.id_solicitud}` ? 'a' : busy === `d${s.id_solicitud}` ? 'd' : null}
+              canAccept={!!user?.aprobado && !busy}
+            />
+          ))}
+          <Text variant="caption" tone="muted" align="center" style={styles.note}>
+            Recuerda que al aceptar se habilitará el chat directo con el cliente y tu ubicación será compartida.
+          </Text>
+        </>
+      ) : null}
+
+      {vista === 'en_curso' && siguiente ? (
+        <View style={styles.top}>
+          <NextStopCard
+            s={siguiente}
+            onOpen={() => openJob(siguiente)}
+            onChat={() => router.push({ pathname: '/chat/[id]', params: { id: String(siguiente.id_solicitud) } })}
+            onMap={() => openMap(siguiente)}
+          />
+          {programados.length ? (
+            <>
+              <SectionHeader title="Programado" />
+              {programados.map((s) => <ScheduledRow key={s.id_solicitud} s={s} onPress={() => openJob(s)} />)}
+            </>
+          ) : null}
+        </View>
+      ) : null}
+
+      {vista === 'historial' ? (
+        <View style={styles.top}>
+          {items.map((s) => <OrderCard key={s.id_solicitud} s={s} rol="tecnico" onPress={() => openJob(s)} />)}
+        </View>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   gap: { marginBottom: space.md },
-  tabs: { marginTop: space.lg, marginBottom: space.lg },
-  prop: { marginTop: space.md },
-  zona: { marginTop: space.sm },
-  actions: { flexDirection: 'row', gap: space.sm, marginTop: space.md },
+  top: { marginTop: space.lg },
+  note: { marginTop: space.xs, marginBottom: space.lg, paddingHorizontal: space.lg },
 });

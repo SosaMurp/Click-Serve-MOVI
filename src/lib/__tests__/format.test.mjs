@@ -49,3 +49,11 @@ test('sumMoney suma importes en centavos (vista previa de la cotización)', () =
   assert.equal(sumMoney(['1.005', null, '']), '1.00');
   assert.equal(sumMoney([]), '0.00');
 });
+
+test('la llegada estimada usa 25 km/h y al menos 1 minuto, como el servidor', async () => {
+  const { etaMinutes } = await import('../format.ts');
+  assert.equal(etaMinutes(5), 12);
+  assert.equal(etaMinutes(0.1), 1);
+  assert.equal(etaMinutes(null), null);
+  assert.equal(etaMinutes(undefined), null);
+});

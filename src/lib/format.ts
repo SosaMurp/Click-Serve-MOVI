@@ -114,6 +114,12 @@ export function formatDistance(km: number | null | undefined): string {
   return `${n.toFixed(1)} km`;
 }
 
+// Llegada estimada como la calcula el servidor: 25 km/h en ciudad, al menos 1 minuto.
+export function etaMinutes(km: number | null | undefined): number | null {
+  if (km === null || km === undefined || !Number.isFinite(Number(km))) return null;
+  return Math.max(1, Math.round((Number(km) / 25) * 60));
+}
+
 export function initials(nombre?: string | null, apellido?: string | null): string {
   const a = String(nombre || '').trim().charAt(0);
   const b = String(apellido || '').trim().charAt(0);
