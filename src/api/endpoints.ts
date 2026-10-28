@@ -8,10 +8,15 @@ import type {
 
 type Msg = { mensaje: string };
 
+export type LoginResult = { usuario?: User; token?: string; requires2FA?: boolean; reto?: string; metodo?: 'TOTP' | 'EMAIL'; mensaje?: string };
+// Google/Apple con un correo nuevo: datos para prellenar el registro.
+export type SocialResult = LoginResult & { requiere_registro?: boolean; email?: string; nombre?: string; apellidos?: string };
+
 // ───────────────────────── Acceso y cuenta ─────────────────────────
 export const authApi = {
-  login: (email: string, password: string) =>
-    api.post<{ usuario?: User; token?: string; requires2FA?: boolean; reto?: string; metodo?: 'TOTP' | 'EMAIL'; mensaje: string }>('/api/login', { email, password }),
+  login: (email: string, password: string) => api.post<LoginResult>('/api/login', { email, password }),
+  google: (id_token: string) => api.post<SocialResult>('/api/auth/google', { id_token }),
+  apple: (identity_token: string, nombre?: string, apellidos?: string) => api.post<SocialResult>('/api/auth/apple', { identity_token, nombre, apellidos }),
   verify2fa: (reto: string, codigo: string) => api.post<{ usuario: User; token: string }>('/api/login/verify-2fa', { reto, codigo }),
   register: async (data: Record<string, string>, files: { ine_frente: LocalFile; ine_reverso: LocalFile; rostro: LocalFile }) =>
     api.upload<{ mensaje: string; id_usuario: number }>('POST', '/api/register', await buildForm(data, files)),

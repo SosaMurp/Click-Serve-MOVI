@@ -14,9 +14,10 @@ export default function RecuperarCodigo() {
   return (
     <CodeScreen
       title="Código de recuperación"
-      heading="Escribe tu código"
+      icon="key"
       body={`Si la cuenta existe, enviamos un código de 6 dígitos ${via}.`}
       fallbackHref="/recuperar"
+      backLabel="Volver"
       onCode={async (code) => {
         try {
           const { reset_token } = await authApi.verifyRecovery(String(email), code);

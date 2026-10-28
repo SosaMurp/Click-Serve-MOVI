@@ -26,16 +26,16 @@ export function DateField({ label, value, onChange, min, max, error, helper, ini
   const [open, setOpen] = useState(false);
   return (
     <View style={styles.fieldWrap}>
-      <Text variant="label" tone="soft" style={styles.fieldLabel}>{label}</Text>
+      <Text variant="overline" style={styles.fieldLabel}>{label}</Text>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${value ? formatDate(value) : 'sin seleccionar'}`}
         onPress={() => setOpen(true)}
-        style={[styles.field, { borderColor: error ? color.danger : 'transparent', borderWidth: 1.5 }]}
+        style={[styles.field, { borderColor: error ? color.danger : color.lineStrong, borderWidth: error ? 2 : 1 }]}
       >
+        {/* Como en la referencia: dd/mm/aaaa con el calendario a la derecha (RF-19 abre el calendario). */}
+        <Text variant="body" tone={value ? 'default' : 'muted'} style={styles.flex} tabular>{value ? value.split('-').reverse().join('/') : 'dd/mm/aaaa'}</Text>
         <Icon name="calendar" size={20} color={color.inkMuted} />
-        <Text variant="body" tone={value ? 'default' : 'muted'} style={styles.flex}>{value ? formatDate(value) : 'Selecciona una fecha'}</Text>
-        <Icon name="chevron-down" size={22} color={color.inkMuted} />
       </Pressable>
       <Text variant="caption" tone={error ? 'danger' : 'muted'} style={styles.fieldBelow}>{error || helper || ' '}</Text>
       <Sheet visible={open} onClose={() => setOpen(false)} title={label}>
@@ -126,8 +126,8 @@ export function TimeField({ label, value, onChange, error }: { label: string; va
   const [open, setOpen] = useState(false);
   return (
     <View style={styles.fieldWrap}>
-      <Text variant="label" tone="soft" style={styles.fieldLabel}>{label}</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value ? formatTime12(value) : 'sin seleccionar'}`} onPress={() => setOpen(true)} style={[styles.field, { borderColor: error ? color.danger : 'transparent', borderWidth: 1.5 }]}>
+      <Text variant="overline" style={styles.fieldLabel}>{label}</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value ? formatTime12(value) : 'sin seleccionar'}`} onPress={() => setOpen(true)} style={[styles.field, { borderColor: error ? color.danger : color.lineStrong, borderWidth: error ? 2 : 1 }]}>
         <Icon name="clock" size={20} color={color.inkMuted} />
         <Text variant="body" tone={value ? 'default' : 'muted'} style={styles.flex}>{value ? formatTime12(value) : 'Selecciona una hora'}</Text>
         <Icon name="chevron-down" size={22} color={color.inkMuted} />
@@ -171,8 +171,8 @@ export function Money({ value, size = 'md', tone = 'default', suffix }: { value:
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   fieldWrap: { marginBottom: space.md },
-  fieldLabel: { marginBottom: space.xs },
-  field: { minHeight: 54, borderRadius: radius.md, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: color.surfaceSunk },
+  fieldLabel: { marginBottom: space.sm },
+  field: { minHeight: 54, borderRadius: radius.md, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, backgroundColor: color.surface },
   fieldBelow: { marginTop: 4, minHeight: 18 },
   calHeader: { flexDirection: 'row', alignItems: 'center' },
   monthBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: touch.min },

@@ -21,10 +21,12 @@ export default function DosPasos() {
   return (
     <CodeScreen
       title="Verificación en dos pasos"
-      heading={metodo === 'EMAIL' ? 'Revisa tu correo' : 'Abre tu app autenticadora'}
+      icon={metodo === 'EMAIL' ? 'mail' : 'shield'}
       body={metodo === 'EMAIL'
-        ? `Escribe el código de 6 dígitos que enviamos a ${correo || 'tu correo'}.`
+        ? 'Escribe el código de 6 dígitos que enviamos a'
         : 'Escribe el código de 6 dígitos que muestra tu app autenticadora para Click & Serve.'}
+      email={metodo === 'EMAIL' ? correo || 'tu correo' : undefined}
+      backLabel="Volver al inicio de sesión"
       expiresAt={expiresAt}
       onCode={async (code) => {
         try {

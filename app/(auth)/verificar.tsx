@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CodeScreen } from '@/src/features/auth/CodeScreen';
+import { Text } from '@/src/design';
 import { authApi } from '@/src/api/endpoints';
 import { errorMessage } from '@/src/api/client';
 import { useSession } from '@/src/state/session';
@@ -16,8 +17,11 @@ export default function Verificar() {
   return (
     <CodeScreen
       title="Verifica tu correo"
-      heading="Revisa tu correo"
-      body={`Escribe el código de 6 dígitos que enviamos a ${email || 'tu correo'}. Vence en 15 minutos.`}
+      body="Hemos enviado un código de 6 dígitos a"
+      email={email || 'tu correo'}
+      footerNote={<Text variant="caption" tone="muted" align="center" style={{ marginTop: 12 }}>El código vence en 15 minutos.</Text>}
+      fallbackHref="/registro"
+      backLabel="Volver al registro"
       onCode={async (code) => {
         try {
           const { token, usuario } = await authApi.verifyEmail(String(email), code);
