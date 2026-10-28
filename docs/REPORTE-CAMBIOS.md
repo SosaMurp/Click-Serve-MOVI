@@ -1,6 +1,6 @@
 # Click & Serve móvil: reporte de cambios
 
-Fecha: 27 de octubre de 2026 · App: `Click-Serve-MOVI`, rama `claude/project-thread-9in69s` · Backend: `Click-Serve-Back`, rama `claude/requisitos-moviles` (se entrega como parche).
+Fecha: 27 de octubre de 2026 (actualizado el 28 con la sección 11) · App: `Click-Serve-MOVI`, rama `claude/project-thread-9in69s` y después `claude/rediseno-simple` · Backend: `Click-Serve-Back`, rama `claude/requisitos-moviles` (se entrega como parche).
 
 ## 1. Resumen
 
@@ -53,6 +53,8 @@ Estructura: `app/(auth)`, `app/(cliente)`, `app/(tecnico)`, `app/(comun)` y `app
 
 ## 4. Diseño
 
+> **Reemplazado** por el rediseño de la sección 11 (marino y naranja según las referencias de Diego, cliente sencillo). Lo que sigue describe la versión anterior.
+
 La primera dirección visual, "rótulos pintados" (placas tipo letrero de taller), se reemplazó a petición de Diego por el estilo de su referencia **TravelMate**, con los colores del logo:
 
 - **Paleta** (`src/design/tokens.ts`): fondo casi blanco `#F7F8FA`, tarjetas blancas muy redondeadas, marca azul `#0B4F85` (pin del logo) y acento naranja `#E8801F` (cursor del logo), con bloques pastel derivados (`#D8E9F8`, `#FFE3CC`). Verde, ámbar y rojo quedan solo para estados (pagado, requiere acción, error o SOS).
@@ -102,7 +104,7 @@ Estados: **Cumple**, **Parcial** (lo que falta va en la nota) o **No cumple**. L
 |---|---|---|---|
 | RF-01 | Cierre de sesión global | Cumple | `src/features/account/ProfileScreen.tsx` ("Cerrar sesión", en ambos roles), `wipeLocalData` · `POST /api/logout` |
 | RF-02 | Sesión y dashboard por rol | Cumple | `app/_layout.tsx` (`Stack.Protected`), `app/index.tsx` · `POST /api/login`, `GET /api/me` |
-| RF-03 | "¿No tienes cuenta? Crea una aquí" | Cumple | `app/(auth)/login.tsx` |
+| RF-03 | "¿No tienes cuenta? Regístrate aquí" (texto de la referencia) | Cumple | `app/(auth)/login.tsx`, también "Crear cuenta" en `bienvenida.tsx` |
 | RF-04 | Recuperación de acceso | Cumple | `app/(auth)/recuperar.tsx` → `recuperar-codigo.tsx` → `nueva-contrasena.tsx` · `/api/request-recovery`, `/api/verify-recovery`, `/api/reset-password` |
 | RF-05 | Usuarios existentes → iniciar sesión | Cumple | `app/(auth)/registro.tsx` ("¿Ya tienes cuenta?") |
 | RF-06 | Crear cuenta y redirigir | Cumple | `registro.tsx` → `verificar.tsx` · `POST /api/register` |
@@ -117,13 +119,13 @@ Estados: **Cumple**, **Parcial** (lo que falta va en la nota) o **No cumple**. L
 | RF-18 | Selector CLIENTE / TÉCNICO | Cumple | `registro.tsx` · `POST /api/register` |
 | RF-19 | Calendario de fecha de nacimiento | Cumple | `src/design/Pickers.tsx`, `registro.tsx` (valida 18 años o más) |
 | RF-20 | Perfil del técnico con métricas | Cumple | `app/(comun)/tecnico/[id].tsx` (desde "Ver perfil") · `GET /api/tecnicos/:id/perfil` |
-| RF-21 | Disponibilidad del técnico | Cumple | `src/features/tech/OnlineCard.tsx`, `src/state/availability.tsx` · `PUT /api/tecnico/disponibilidad`, `POST /api/tecnico/latido` |
+| RF-21 | Disponibilidad del técnico | Cumple | píldora ONLINE/OFFLINE de `src/features/tech/PanelHeader.tsx`, `src/state/availability.tsx` · `PUT /api/tecnico/disponibilidad`, `POST /api/tecnico/latido` |
 | RF-22 | Foto profesional | Cumple | `app/(comun)/datos-personales.tsx` · `PUT /api/usuarios/avatar` |
 | RF-23 | Alertas por categoría | Cumple | `app/(tecnico)/especialidades.tsx` · `PATCH /api/tecnico/especialidades/:id/toggle` |
 | RF-24 | Habilidades y portafolio | Cumple | `especialidades.tsx`, `portafolio.tsx` · `POST /api/tecnico/especialidades`, `/api/tecnico/portafolio` |
-| RF-25 | Carga secuencial de documentos | Cumple | `src/features/auth/DocCapture.tsx` (INE y rostro), `app/(tecnico)/verificacion.tsx` · `/api/tecnico/documentos`, `/api/tecnicos/validar-cedula` |
+| RF-25 | Carga secuencial de documentos | Cumple | `src/features/ine/IneCapture.tsx` (INE verificada al tomar la foto · `POST /api/ine/verificar`), `src/features/auth/DocCapture.tsx` (rostro), `app/(tecnico)/verificacion.tsx` · `/api/tecnico/documentos`, `/api/tecnicos/validar-cedula` |
 | RF-43 | Calificación bidireccional | Cumple | `app/(cliente)/orden/[id]/calificar.tsx`, `app/(tecnico)/trabajo/[id]/calificar.tsx` · `/calificar`, `/calificar-cliente` |
-| RF-45 | Iniciar solicitud → detalles | Cumple | `app/(cliente)/(tabs)/inicio.tsx` → `nueva-solicitud.tsx` |
+| RF-45 | Iniciar solicitud → detalles | Cumple | `app/(cliente)/(tabs)/inicio.tsx` ("Pedir un servicio") → `nueva-solicitud.tsx` (3 pasos) |
 | RF-46 | Registrar la necesidad → selección | Cumple | `nueva-solicitud.tsx` → `elegir-tecnico/[id].tsx` · `POST /api/solicitudes` |
 | RF-47 | Búsqueda automática | Cumple | `elegir-tecnico/[id].tsx`, `nueva-solicitud.tsx` · `POST /api/solicitudes/:id/busqueda-automatica` |
 | RF-48 | Asignación por recomendación | Cumple | `elegir-tecnico/[id].tsx` (lista y mapa) · `GET /api/tecnicos/recomendados` |
@@ -158,7 +160,7 @@ Estados: **Cumple**, **Parcial** (lo que falta va en la nota) o **No cumple**. L
 | RF-79 | Comprobante con folio `#TRX-…` | Cumple | `app/(tecnico)/movimiento/[id].tsx` · `GET /api/billetera/movimientos/:id` |
 | RF-84 | Salir sin guardar | Cumple | `src/design/AppBar.tsx` (`confirmDiscard`, botón atrás y gesto) |
 | RF-85 | Guardado explícito | Cumple | `datos-personales.tsx`, `notificaciones.tsx`, `direccion.tsx` · `PUT /api/usuarios/perfil`, `/preferencias` |
-| RF-86 | Avatar → cuenta y datos | Cumple | avatar de la cabecera en `inicio.tsx` y `trabajos.tsx` → Perfil |
+| RF-86 | Avatar → cuenta y datos | Cumple | avatar de la cabecera en `inicio.tsx` (→ Mi cuenta) y en `PanelHeader.tsx` del técnico (→ Perfil) |
 | RF-87 | Direcciones, pagos, seguridad y soporte | Cumple | `ProfileScreen.tsx` |
 | RF-88 | Abrir correo o marcador | Cumple | `app/(comun)/ayuda/index.tsx` (`mailto:` y `tel:`) |
 | RF-89 | Preferencias de acceso y alertas | Cumple | `app/(comun)/notificaciones.tsx` · `PUT /api/usuarios/preferencias` |
@@ -279,7 +281,7 @@ Algunos dependen de infraestructura que no existe en un entorno local (TLS 1.3, 
 npm install
 cp .env.example .env        # llenar DB_*, JWT_SECRET, FILES_SECRET; NODE_ENV=development para pruebas locales
 npm start                   # aplica migraciones y escucha en PORT
-npm test                    # requiere una base vacía clickyserve_test → 108 pruebas
+npm test                    # requiere una base vacía clickyserve_test → 143 pruebas
 ```
 En desarrollo, los códigos de verificación se imprimen en la consola del servidor y los cobros son sandbox.
 
@@ -287,7 +289,7 @@ En desarrollo, los códigos de verificación se imprimen en la consola del servi
 ```bash
 npm install
 # .env → EXPO_PUBLIC_API_URL=http://localhost:3001 (o la IP de la PC para un teléfono en la misma red)
-npm test                    # 18 pruebas
+npm test                    # 26 pruebas
 npx tsc --noEmit            # chequeo de tipos
 npm run web                 # http://localhost:8081 · o `npm start` y Expo Go / dev client
 ```
@@ -305,15 +307,15 @@ npm run web                 # http://localhost:8081 · o `npm start` y Expo Go /
 
 ## 9. Cómo aplicar el parche del backend
 
-Los 23 parches están en `Click-Serve-Back\parches\` (y en `entregables\parches\`). No incluyen `.env`, `node_modules` ni `scripts/local-*`. `main` versiona `node_modules`, y la única dependencia nueva es `ws`, así que hay que correr `npm install` después de aplicar.
+Los 27 parches están en `Click-Serve-Back\parches\` (y en `entregables\parches\`). No incluyen `.env`, `node_modules` ni `scripts/local-*`. `main` versiona `node_modules`, y las dependencias nuevas son `ws`, `jose`, `sharp`, `tesseract.js` y `@tesseract.js-data/spa` y `eng`, así que hay que correr `npm install` después de aplicar.
 
 ```bash
 cd Click-Serve-Back
 git checkout main && git pull
 git checkout -b requisitos-moviles
 git am parches/*.patch          # aplican limpio sobre main (37b8a1a)
-npm install                     # agrega ws
-npm test                        # 108/108 con la base clickyserve_test
+npm install                     # agrega ws, jose, sharp y tesseract.js
+npm test                        # 143/143 con la base clickyserve_test
 ```
 Si `git am` se detiene por un conflicto (por ejemplo, si `main` avanzó), resuélvelo y usa `git am --continue`, o `git am --abort` para volver atrás.
 
@@ -322,3 +324,115 @@ Si `git am` se detiene por un conflicto (por ejemplo, si `main` avanzó), resué
 **App** (`main..claude/project-thread-9in69s`): `92e05ce` sistema de diseño e infraestructura · `5037dd3` acceso · `fb181c7` componentes de órdenes · `caf487c` cambio a la referencia TravelMate · `9571e28` flujo del cliente · `33b2efc` flujo del técnico · `dee1475` borra la app anterior · `8e0fdd0` `b8c028b` `8cff026` `71561ad` `7d4f315` `f67bbfb` `19f813a` `26f8811` `39c1029` `b447e98` `0f3614b` `85ced74` `0607429` correcciones de seguridad y calidad · este reporte.
 
 **Backend** (`main..claude/requisitos-moviles`): `3dcd422` backend modular · `f9395a4` cuenta · `8067efe` solicitudes · `4cf08bf` técnico y pagos · `7dea8ad` soporte y direcciones · `5a12f89` fotos firmadas · `061cee2` posición aproximada · `2635c69` `59c76f0` `f50310d` `0c97ae2` las 4 fallas de seguridad · `0104b3c`…`5fdd2b3` segunda revisión.
+
+## 11. Rediseño según las referencias, cliente sencillo y verificación real de la INE (28 de octubre)
+
+Pedido de Diego: que la credencial se reconozca de verdad al tomar la foto, cambios de diseño según seis pantallas de referencia y pantallas del cliente más sencillas, con el enfoque del portal ciudadano de CILIM. Diseño y plan: `docs/superpowers/specs/2026-10-27-rediseno-cliente-simple-ine-design.md` y `docs/superpowers/plans/2026-10-27-rediseno-cliente-simple-ine.md`.
+
+### 11.1 Diseño (referencias de Diego)
+
+- **Estilo:** fondo blanco, azul marino `#0C1C40` para títulos y la acción principal, y naranja para la acción destacada. Etiquetas de campo en MAYÚSCULAS, campos blancos con borde e ícono, botones de 52/56 dp con texto en mayúsculas, tarjetas de radio 16 y solo Inter. Sin degradados ni bloques pastel.
+- **Accesibilidad:** el naranja `#FF6B00` con texto blanco da 2.9:1, así que los botones naranjas usan `#E25900` (3.7:1, etiqueta en negrita). Los enlaces naranjas usan `#B84A00` (5.2:1) y el borde de los campos `#8B93A1` (3.1:1).
+- **Logo nuevo:** flecha de cursor con llave inglesa, redibujada en SVG (`src/design/Brand.tsx`). Con el mismo dibujo se generaron el ícono, el ícono adaptativo y monocromo de Android, el splash y el favicon.
+- **Pantallas:**
+  - bienvenida nueva (`app/(auth)/bienvenida.tsx`; la app sin sesión abre aquí);
+  - login;
+  - crear cuenta en 3 pasos: el paso 1 es la pantalla de la referencia; teléfono y confirmación van en el 2 y la identidad en el 3;
+  - verifica tu correo: 6 cajas, que son los dígitos reales; VERIFICAR CÓDIGO; sigue verificando al teclear el último dígito (RNF-18);
+  - Panel de Trabajo del técnico: píldora ONLINE/OFFLINE (RF-21), cifras de la semana, pestañas NUEVAS/EN CURSO/HISTORIAL, tarjeta "Asignación directa / Solicitud cercana" con RECHAZAR y ACEPTAR TRABAJO, y "Siguiente destino" con ETA, CITA, ESTATUS, CHAT y VER EN MAPA.
+- La barra inferior del técnico conserva Trabajos, Mapa, Billetera y Perfil. No se agregó "Comunidad" porque ningún requisito la pide.
+
+### 11.2 Inicio con Google y Apple (listo, apagado)
+
+Los botones aparecen solo si existe la credencial; sin ella no se muestran.
+
+| Dónde | Google | Apple (solo iOS) |
+|---|---|---|
+| App `.env` | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | `EXPO_PUBLIC_APPLE_SIGNIN=1` |
+| Backend `.env` | `GOOGLE_CLIENT_IDS` (los mismos IDs separados por comas) | `APPLE_BUNDLE_ID` |
+| Cuenta | Proyecto en Google Cloud Console (gratis): pantalla de consentimiento y un ID de cliente OAuth por plataforma. El de web lleva como origen y redirección el dominio de la app. | Apple Developer Program (99 USD al año) con "Sign in with Apple" en el bundle `com.gallo122.clickservemovil`. En `app.json`, `ios.usesAppleSignIn = true` y el plugin `expo-apple-authentication`. Después, una build nueva. |
+
+- **Backend:** `POST /api/auth/google` y `POST /api/auth/apple` verifican la firma del id_token con las llaves públicas del proveedor, además del emisor, la audiencia y el correo verificado. Con un correo registrado inician sesión (respetando 2FA); con uno nuevo devuelven nombre y correo para prellenar el registro, que sigue exigiendo la INE. Sin variables responden 404 `PROVIDER_DISABLED`.
+- **App:** Google usa `expo-auth-session` (OpenID con nonce), que funciona en web. Para la app instalada, Expo v57 recomienda `@react-native-google-signin/google-signin`; conviene cambiarlo al activarlo en Android o iOS.
+
+### 11.3 Cliente más sencillo (enfoque CILIM)
+
+De `C:\Proyectos\CILIM\src\views\ciudadano\ciudadano.css` se tomaron la letra de cuerpo de 18 px, los botones de 56 dp, una pregunta por pantalla, bordes visibles y el lenguaje llano.
+
+- **Inicio** (`inicio.tsx`): saludo, "Tu servicio" (el estado en una frase con un solo botón; `clientStatusText` en `src/lib/estado.ts`) y tres acciones grandes: Pedir un servicio, Mis servicios y Ayuda.
+- **Pedir un servicio** (`nueva-solicitud.tsx`): "Paso N de 3" con Regresar siempre visible: 1) qué arreglar; 2) dónde, con el mapa como opción; 3) cuándo y quién va. Al final confirma con el folio.
+- **Mis servicios y detalle:** el estado en palabras y un botón con la siguiente acción ("Revisar el precio", "Confirmar y pagar"). Avance, precio, fotos y detalle están en "Ver detalles del servicio"; reprogramar, garantía o reporte, soporte y cancelar, en "Más opciones". El SOS sigue siempre visible.
+- **Mi cuenta:** filas grandes para lo diario; notificaciones, descargar o borrar mis datos y términos están en "Más opciones". La barra inferior del cliente es más grande.
+- Se revisó a 320 px y con la letra al 160 %: nada se corta ni se encima. Ningún RF se perdió; RF-51, RF-57 y RF-63 quedaron un nivel más adentro.
+
+### 11.4 Verificación real de la credencial INE
+
+**Qué prueba:** que la foto es de una credencial para votar con datos legibles, coherentes entre sí y con lo que la persona registró. **Qué no prueba:** que el INE la haya emitido ni que esté vigente en la lista nominal. Eso solo lo confirma un proveedor con convenio (ver 11.5).
+
+**En la app** (`src/features/ine/`):
+- **Web** (`IneCamera.web.tsx`): cámara en vivo con `getUserMedia` y un marco de 85.6 × 54 mm. Cada 250 ms analiza el cuadro (`src/lib/frameAnalysis.ts`: brillo, reflejo, nitidez y documento en el marco) y avisa "Acerca la credencial", "Hay reflejo", "Está borrosa" o "Falta luz". Dispara sola tras ~1 s estable y recorta al marco; también se puede tomar a mano.
+- **App instalada** (`IneCamera.tsx`, `expo-camera`): marco y disparo manual; la revisión es la del servidor al instante. Si la build no trae `expo-camera`, usa la cámara del sistema. Para la INE no se acepta galería.
+- `IneCapture.tsx` manda cada foto a revisar y muestra "Revisando tu credencial…", luego "Credencial verificada" o el motivo con "Tomar otra vez". El registro avanza solo con frente y reverso verificados.
+
+**En el backend** (`POST /api/ine/verificar`, pública, 30 intentos cada 15 min por IP):
+1. **Calidad** con `sharp`: tamaño, brillo, reflejo y nitidez.
+2. **OCR** con `tesseract.js`. Los datos de español e inglés van como paquetes, sin descargas al arrancar; una lectura tarda ~0.5 s.
+3. **Frente:**
+   - al menos 2 textos de la credencial (INSTITUTO NACIONAL ELECTORAL, CREDENCIAL PARA VOTAR, CURP…);
+   - CURP con estructura, estado, fecha real y dígito verificador de RENAPO;
+   - fecha de nacimiento de la CURP igual a la registrada;
+   - iniciales de la CURP coherentes con el nombre;
+   - nombre leído igual al registrado, sin acentos y tolerando errores de lectura;
+   - sexo impreso igual al de la CURP.
+4. **Reverso:**
+   - MRZ TD1 `IDMEX` con los dígitos verificadores de documento, nacimiento, vigencia y compuesto (ICAO 9303);
+   - fecha, sexo y nombre iguales a los del frente;
+   - credencial vigente.
+5. Si todo pasa, devuelve un **ticket** firmado (HMAC), ligado al SHA-256 de la imagen, a la CURP y al nombre y fecha registrados, que vence en 30 min. `POST /api/register` exige los dos tickets y que las imágenes subidas sean las mismas; guarda cada comprobación en `verificaciones_ine` (migración `004`).
+6. Si algo falla, el motivo va en palabras sencillas y nunca se devuelven los datos de una credencial que no coincide.
+
+**Pruebas:**
+- `test/ine.test.js` (15): CURP, MRZ con el ejemplar oficial de ICAO, nombres, relleno de la MRZ y proveedor apagado.
+- `test/ine-endpoint.test.js` (13), con credenciales sintéticas generadas en la prueba: válida, foto que no es INE, borrosa, CURP alterada, fecha y nombre de otra persona, MRZ alterada, reverso de otra persona, reverso sin frente, registro sin tickets, con tickets de otras imágenes y registro correcto.
+- Navegador con una cámara simulada: la foto que no es INE no dispara; el frente y el reverso se verifican solos.
+- Link público: la verificación responde en ~1.5 s.
+- **Falta:** probar con una INE real y en un teléfono.
+
+### 11.5 Proveedores para validar contra la lista nominal (sin contratar nada)
+
+| Proveedor | Lo que se encontró | API y pruebas | Precio público |
+|---|---|---|---|
+| Verificamex | No se encontró documentación pública en la búsqueda | — | Pedir cotización |
+| Nubarium | Empresa mexicana con más de 50 servicios de identidad por API o SDK, incluida la INE | Documentación por contacto | Listado no oficial en RapidAPI: plan Pro 5,000 consultas al mes + 0.0267 USD c/u; Mega 3,483 USD al mes por 200,000. Confirmar con ellos |
+| Truora | API de validaciones (`api.validations.truora.com`, encabezado `Truora-API-Key`) y colección de Postman | No confirma la INE en su documentación pública | No público |
+| MetaMap | "GovChecks: Mexico INE" (`POST api.prod.metamap.com/govchecks/v1/mx/ine`) valida contra el INE | No menciona sandbox | No público |
+| Didit (alternativa) | "INE vigencia" contra el registro del INE | API documentada | 0.20 USD por consulta con resultado concluyente |
+| Veriff, Jumio, Incode | También validan contra la lista nominal | API y SDK | Por contrato |
+
+El adaptador `src/services/ineProvider.js` queda apagado sin `INE_PROVIDER` e `INE_PROVIDER_KEY`. Al elegir un proveedor, hay que escribir ahí su llamada (frente, reverso, selfie y datos) y guardar el resultado con `proveedor` en `verificaciones_ine`.
+
+### 11.6 Verificación de esta etapa
+
+- **App:** `npx tsc --noEmit` sin errores; `npm test` 26/26 (estado del cliente, llegada estimada y análisis de cuadros).
+- **Backend:** `npm test` 143/143. Los 27 parches aplican limpio sobre `main` y dejan el mismo árbol que la rama.
+- **Navegador** (375 y 320 px):
+  - bienvenida, login, registro, verificación del correo, panel del técnico (Nuevas y En curso con una solicitud real), inicio del cliente, pedir un servicio en 3 pasos (solicitud real creada y cancelada), mis servicios, detalle y cuenta;
+  - el link público muestra todo lo nuevo.
+- **Dependencias nuevas:**
+  - app: `expo-camera`, `expo-auth-session`, `expo-web-browser`, `expo-apple-authentication`;
+  - backend: `jose`, `sharp`, `tesseract.js`, `@tesseract.js-data/spa` y `eng`.
+- **App instalada:** necesita una build nueva con EAS para tener la cámara de la INE y los inicios con Google y Apple. Las builds anteriores siguen funcionando: cargan esos módulos solo si existen.
+
+### 11.7 Pendientes de Diego
+
+1. Probar la verificación con tu INE real: en el link web desde el celular y después en una build nueva.
+2. Elegir si se contrata un proveedor de lista nominal (11.5).
+3. Credenciales de Google (Google Cloud) y, si se quiere Apple, la cuenta de Apple Developer (11.2).
+4. Pasar el archivo original del logo, si existe, para reemplazar el redibujado.
+5. Subir las ramas cuando lo indiques: nada de esta etapa se subió a GitHub.
+
+### 11.8 Commits de esta etapa
+
+**App** (`b9f838b..claude/rediseno-simple`): `b275b16` diseño · `f0238b7` plan · `87b9b2e` tokens, componentes y logo · `a8519a0` bienvenida, login, registro y verificación · `e5c803f` panel del técnico · `a4b0bac` inicio del cliente · `cb101b8` pedir servicio en 3 pasos · `f923230` mis servicios, detalle y cuenta · `60ae5c0` captura guiada de la INE · este reporte.
+
+**Backend** (`5fdd2b3..claude/requisitos-moviles`, parches `0024`–`0027`): `9542064` inicio con Google y Apple · `5d8a574` CURP, MRZ y nombres · `be9ce4a` verificación de la INE y registro con tickets · `f52d439` fotos desde 500 px.
