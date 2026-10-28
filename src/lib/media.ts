@@ -19,6 +19,9 @@ async function compress(asset: ImagePicker.ImagePickerAsset): Promise<LocalFile>
   }
 }
 
+// Foto tomada fuera del selector (cámara de la INE): misma compresión a 1600 px.
+export const compressImage = (uri: string, width?: number) => compress({ uri, width } as ImagePicker.ImagePickerAsset);
+
 export class MediaPermissionError extends Error {}
 
 export async function pickImages(opts: { camera?: boolean; front?: boolean; multiple?: boolean; max?: number } = {}): Promise<LocalFile[]> {

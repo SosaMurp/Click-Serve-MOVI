@@ -25,7 +25,14 @@
       ],
       "expo-secure-store",
       "expo-sharing",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir que Click & Serve use la cámara para verificar tu credencial y tu rostro.",
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true

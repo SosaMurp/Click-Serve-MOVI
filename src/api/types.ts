@@ -233,3 +233,16 @@ export type TicketMensaje = { id_mensaje: number; id_ticket: number; id_emisor: 
 export type Sesion = { id_sesion: string; dispositivo: string; fecha_creacion: string; es_sesion_actual: boolean };
 
 export type LocalFile = { uri: string; name: string; type: string };
+
+// Resultado de POST /api/ine/verificar: cada comprobación con su resultado y, si pasa, el ticket
+// firmado que pide el registro.
+export type IneComprobacion = { id: string; ok: boolean; detalle: string };
+export type IneResultado = {
+  ok: boolean;
+  lado: 'frente' | 'reverso';
+  comprobaciones: IneComprobacion[];
+  motivo?: string;
+  datos?: { curp?: string; sexo?: string; fecha_nacimiento?: string; vigencia?: string };
+  ticket?: string;
+};
+export type IneRegistro = { nombre: string; apellidos: string; fecha_nacimiento: string };

@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   AppBar, Banner, Button, Checkbox, color, DateField, Screen, Segmented, space, Text, TextField,
 } from '@/src/design';
 import { DocCapture } from '@/src/features/auth/DocCapture';
+import { IneCapture, type IneValue } from '@/src/features/ine/IneCapture';
 import { PasswordChecklist } from '@/src/features/auth/PasswordChecklist';
 import { authApi } from '@/src/api/endpoints';
 import { ApiError, errorMessage } from '@/src/api/client';
@@ -39,8 +40,8 @@ export default function Registro() {
   const [fecha, setFecha] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [ineFrente, setIneFrente] = useState<LocalFile | null>(null);
-  const [ineReverso, setIneReverso] = useState<LocalFile | null>(null);
+  const [ineFrente, setIneFrente] = useState<IneValue | null>(null);
+  const [ineReverso, setIneReverso] = useState<IneValue | null>(null);
   const [rostro, setRostro] = useState<LocalFile | null>(null);
   const [acepta, setAcepta] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -49,6 +50,13 @@ export default function Registro() {
 
   const dirty = useMemo(() => !!(nombre || apellidos || telefono || email || password || ineFrente), [nombre, apellidos, telefono, email, password, ineFrente]);
   const clear = (k: string) => setErrors((e) => ({ ...e, [k]: undefined }));
+  const registroIne = useMemo(() => ({ nombre: nombre.trim(), apellidos: apellidos.trim(), fecha_nacimiento: fecha || '' }), [nombre, apellidos, fecha]);
+
+  // La verificación de la INE queda ligada al nombre y la fecha: si cambian, se vuelve a tomar.
+  useEffect(() => {
+    setIneFrente(null);
+    setIneReverso(null);
+  }, [registroIne]);
 
   const validate = (s: number) => {
     const e: Record<string, string> = {};
@@ -65,7 +73,7 @@ export default function Registro() {
       if (confirm !== password) e.confirm = 'Las contraseñas no coinciden.';
     }
     if (s === 2) {
-      if (!ineFrente || !ineReverso || !rostro) e.docs = 'Toma las tres fotos para verificar tu identidad.';
+      if (!ineFrente || !ineReverso || !rostro) e.docs = 'Toma las tres fotos: tu credencial debe quedar verificada (frente y reverso) y tu rostro.';
       if (!acepta) e.acepta = 'Debes aceptar el aviso de privacidad y los términos.';
     }
     setErrors(e);
@@ -83,13 +91,18 @@ export default function Registro() {
         {
           nombre: nombre.trim(), apellidos: apellidos.trim(), telefono: onlyDigits(telefono), email: email.trim().toLowerCase(),
           fechaNacimiento: fecha, password, perfil: rol === 'tecnico' ? '2' : '1', acepta_privacidad: 'true',
+          ticket_ine_frente: ineFrente.ticket, ticket_ine_reverso: ineReverso.ticket,
         },
-        { ine_frente: ineFrente, ine_reverso: ineReverso, rostro }
+        { ine_frente: ineFrente.file, ine_reverso: ineReverso.file, rostro }
       );
       // RF-06: la cuenta se crea y se pasa de inmediato a la verificación del correo.
       router.replace({ pathname: '/verificar', params: { email: email.trim().toLowerCase() } });
     } catch (e) {
-      if (e instanceof ApiError && e.code === 'USER_EXISTS') {
+      if (e instanceof ApiError && e.code === 'INE_NOT_VERIFIED') {
+        setIneFrente(null);
+        setIneReverso(null);
+        setErrors({ docs: e.message });
+      } else if (e instanceof ApiError && e.code === 'USER_EXISTS') {
         setServerError('Este correo ya tiene una cuenta. Inicia sesión o recupera tu contraseña.');
       } else if (e instanceof ApiError && e.field) {
         const fieldStep: Record<string, number> = { nombre: 0, apellidos: 0, email: 0, fechaNacimiento: 0, password: 0, telefono: 1 };
@@ -162,8 +175,8 @@ export default function Registro() {
 
       {step === 2 ? (
         <>
-          <DocCapture step={1} title="INE · frente" hint="Que se lean tu nombre y tu foto." icon="credit-card" file={ineFrente} onChange={(f) => { setIneFrente(f); clear('docs'); }} />
-          <DocCapture step={2} title="INE · reverso" hint="Que se vea el código de barras." icon="credit-card" file={ineReverso} onChange={(f) => { setIneReverso(f); clear('docs'); }} disabled={!ineFrente} />
+          <IneCapture step={1} lado="frente" registro={registroIne} value={ineFrente} onChange={(v) => { setIneFrente(v); setIneReverso(null); clear('docs'); }} />
+          <IneCapture step={2} lado="reverso" registro={registroIne} ticketFrente={ineFrente?.ticket} value={ineReverso} onChange={(v) => { setIneReverso(v); clear('docs'); }} disabled={!ineFrente} />
           <DocCapture step={3} title="Tu rostro" hint="De frente, sin lentes oscuros ni gorra." icon="smile" file={rostro} onChange={(f) => { setRostro(f); clear('docs'); }} front disabled={!ineReverso} />
           {errors.docs ? <Text variant="caption" tone="danger" style={styles.docsError}>{errors.docs}</Text> : null}
           <Checkbox checked={acepta} onChange={(v) => { setAcepta(v); clear('acepta'); }} error={errors.acepta}>

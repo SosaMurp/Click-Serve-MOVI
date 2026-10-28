@@ -2,7 +2,7 @@ import { api } from './client';
 import { buildForm } from '../lib/files';
 import type {
   Billetera, Categoria, ChatMensaje, Comprobante, Contadores, Direccion, Documento, Especialidad, Incidencia,
-  ItemPortafolio, LocalFile, Movimiento, PerfilTecnico, Reprogramacion, ResumenTecnico, Sesion, Solicitud,
+  IneRegistro, IneResultado, ItemPortafolio, LocalFile, Movimiento, PerfilTecnico, Reprogramacion, ResumenTecnico, Sesion, Solicitud,
   Tarea, Tarjeta, TecnicoRecomendado, Ticket, TicketMensaje, User, Desglose,
 } from './types';
 
@@ -21,6 +21,9 @@ export const authApi = {
   register: async (data: Record<string, string>, files: { ine_frente: LocalFile; ine_reverso: LocalFile; rostro: LocalFile }) =>
     api.upload<{ mensaje: string; id_usuario: number }>('POST', '/api/register', await buildForm(data, files)),
   verifyEmail: (email: string, token: string) => api.post<{ usuario: User; token: string }>('/api/verify-token', { email, token }),
+  // RF-25: cada lado de la INE se verifica al tomar la foto; el reverso necesita el ticket del frente.
+  verificarIne: async (lado: 'frente' | 'reverso', foto: LocalFile, registro: IneRegistro, ticketFrente?: string) =>
+    api.upload<IneResultado>('POST', '/api/ine/verificar', await buildForm({ lado, ...registro, ticket_frente: ticketFrente }, { foto })),
   resendCode: (email: string) => api.post<Msg>('/api/resend-code', { email }),
   requestRecovery: (email: string, canal: 'EMAIL' | 'SMS') => api.post<Msg>('/api/request-recovery', { email, canal }),
   verifyRecovery: (email: string, token: string) => api.post<{ reset_token: string }>('/api/verify-recovery', { email, token }),
