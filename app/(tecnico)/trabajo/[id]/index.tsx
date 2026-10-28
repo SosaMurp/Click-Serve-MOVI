@@ -238,7 +238,7 @@ export default function Trabajo() {
               </Surface>
             ) : <Text variant="bodySm" tone="muted">¿Hizo falta una refacción o material extra? Agrégalo para que el cliente lo vea antes de pagar.</Text>}
 
-            <Button title="Terminar trabajo" icon="check-circle" onPress={finish} loading={busy === 'fin'} disabled={!!busy} full size="lg" style={styles.finish} />
+            <Button variant="accent" title="Terminar trabajo" icon="check-circle" onPress={finish} loading={busy === 'fin'} disabled={!!busy} full size="lg" style={styles.finish} />
           </>
         ) : null}
 

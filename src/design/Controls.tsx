@@ -5,7 +5,7 @@ import { Text } from './Text';
 import { color, elevation, font, radius, space, touch } from './tokens';
 import { initials } from '../lib/format';
 
-// ───────── Chip en píldora: el seleccionado se rellena con el naranja de acento ─────────
+// ───────── Chip: blanco con borde; el seleccionado se rellena de marino ─────────
 type ChipProps = { label: string; selected?: boolean; onPress?: () => void; icon?: IconName; disabled?: boolean };
 
 export function Chip({ label, selected, onPress, icon, disabled }: ChipProps) {
@@ -18,26 +18,45 @@ export function Chip({ label, selected, onPress, icon, disabled }: ChipProps) {
       hitSlop={6}
       style={({ pressed }) => [styles.chip, selected ? styles.chipOn : null, pressed && !selected ? { backgroundColor: color.surfaceSunk } : null, disabled ? { opacity: 0.45 } : null]}
     >
-      {icon ? <Icon name={icon} size={15} color={selected ? color.ink : color.inkSoft} /> : null}
-      <Text variant="label" style={{ color: selected ? color.ink : color.inkSoft, fontSize: 14 }}>{label}</Text>
+      {icon ? <Icon name={icon} size={15} color={selected ? color.inkOnColor : color.inkSoft} /> : null}
+      <Text variant="label" style={{ color: selected ? color.inkOnColor : color.inkSoft, fontSize: 14 }}>{label}</Text>
     </Pressable>
   );
 }
 
-// ───────── Pestañas en píldora ("Todas / En curso / Historial") ─────────
+// ───────── Botones segmentados (TIPO DE PERFIL: CLIENTE / TÉCNICO): el elegido relleno de marino ─────────
 type Option<T extends string> = { value: T; label: string; icon?: IconName; count?: number };
 
 export function Segmented<T extends string>({ options, value, onChange }: { options: Option<T>[]; value: T; onChange: (v: T) => void }) {
   return (
-    <View style={styles.segment} accessibilityRole="tablist">
+    <View style={styles.segment} accessibilityRole="radiogroup">
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={[styles.segItem, on && styles.segOn]}>
-            {o.icon ? <Icon name={o.icon} size={16} color={on ? color.ink : color.inkMuted} /> : null}
-            <Text variant="label" style={{ color: on ? color.ink : color.inkMuted, fontSize: 14 }} numberOfLines={1}>
+          <Pressable key={o.value} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => onChange(o.value)} style={[styles.segItem, on && styles.segOn]}>
+            {o.icon ? <Icon name={o.icon} size={16} color={on ? color.inkOnColor : color.ink} /> : null}
+            <Text variant="button" style={{ color: on ? color.inkOnColor : color.ink, fontSize: 14 }} numberOfLines={1}>
               {o.label}{o.count !== undefined ? ` ${o.count}` : ''}
             </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+// ───────── Pestañas de texto (NUEVAS (1) / EN CURSO / HISTORIAL) con subrayado naranja en la activa ─────────
+export function Tabs<T extends string>({ options, value, onChange }: { options: Option<T>[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <View style={styles.tabs} accessibilityRole="tablist">
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={styles.tab}>
+            <Text variant="overline" style={{ color: on ? color.ink : color.inkMuted, fontSize: 13 }} numberOfLines={1}>
+              {o.label}{o.count !== undefined ? ` (${o.count})` : ''}
+            </Text>
+            <View style={[styles.tabLine, on && styles.tabLineOn]} />
           </Pressable>
         );
       })}
@@ -158,11 +177,15 @@ export function MetricBox({ value, label, tone = 'default' }: { value: string | 
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 16, borderRadius: radius.full, backgroundColor: color.surface, borderWidth: 1, borderColor: color.line },
-  chipOn: { backgroundColor: color.accent, borderColor: color.accent },
-  segment: { flexDirection: 'row', backgroundColor: color.surface, borderRadius: radius.full, padding: 4, gap: 4, ...elevation[1] },
-  segItem: { flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: space.sm, borderRadius: radius.full },
-  segOn: { backgroundColor: color.accent },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 40, paddingHorizontal: 14, borderRadius: radius.sm, backgroundColor: color.surface, borderWidth: 1, borderColor: color.lineStrong },
+  chipOn: { backgroundColor: color.brand, borderColor: color.brand },
+  segment: { flexDirection: 'row', gap: space.sm },
+  segItem: { flex: 1, minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: space.sm, borderRadius: radius.md, borderWidth: 1, borderColor: color.lineStrong, backgroundColor: color.surface },
+  segOn: { backgroundColor: color.brand, borderColor: color.brand },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: color.line },
+  tab: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'flex-end', gap: 10 },
+  tabLine: { alignSelf: 'stretch', height: 3, borderTopLeftRadius: 2, borderTopRightRadius: 2, backgroundColor: 'transparent' },
+  tabLineOn: { backgroundColor: color.accent },
   switchRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
   checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md, minHeight: touch.min, paddingVertical: space.sm },
   box: { width: 24, height: 24, borderRadius: 8, borderWidth: 2, borderColor: color.lineStrong, alignItems: 'center', justifyContent: 'center', marginTop: 1 },

@@ -2,7 +2,6 @@ import React from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
-import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -17,9 +16,9 @@ function Splash() {
   return (
     <View style={styles.splash}>
       <StatusBar style="dark" />
-      <LogoMark size={72} />
+      <LogoMark size={88} />
       <View style={{ marginTop: 16 }}><Wordmark size={30} /></View>
-      <Text variant="caption" tone="muted" style={styles.splashText}>Tech & Service · Lázaro Cárdenas</Text>
+      <Text variant="overline" tone="muted" style={styles.splashText}>Lázaro Cárdenas</Text>
       <ActivityIndicator color={color.brand} style={{ marginTop: 24 }} />
     </View>
   );
@@ -50,7 +49,7 @@ function RootStack() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, ...iconFont });
+  const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, ...iconFont });
   return (
     <SafeAreaProvider>
       <SessionProvider>

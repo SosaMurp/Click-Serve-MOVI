@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, IconName } from './Icon';
 import { Text } from './Text';
-import { color, elevation, space } from './tokens';
+import { color, space } from './tokens';
 
 export type TabMeta = Record<string, { icon: IconName; iconActive: IconName; label: string }>;
 
@@ -14,7 +14,8 @@ export type TabBarProps = {
   navigation: { emit: (e: { type: 'tabPress'; target: string; canPreventDefault: true }) => { defaultPrevented: boolean }; navigate: (name: string, params?: object) => void };
 };
 
-// Barra inferior blanca: ícono de contorno fino con etiqueta; la pestaña activa va en el azul de marca.
+// Barra inferior blanca: ícono de contorno fino con etiqueta; la pestaña activa va en naranja
+// (ícono #E25900, texto #B84A00 para que se lea con 4.5:1).
 export function makeNavigationBar(meta: TabMeta) {
   return function NavigationBar({ state, descriptors, navigation }: TabBarProps) {
     const insets = useSafeAreaInsets();
@@ -40,14 +41,14 @@ export function makeNavigationBar(meta: TabMeta) {
                 style={styles.item}
               >
                 <View style={styles.pill}>
-                  <Icon name={focused ? m.iconActive : m.icon} size={22} color={focused ? color.brand : color.inkMuted} />
+                  <Icon name={focused ? m.iconActive : m.icon} size={22} color={focused ? color.accentStrong : color.inkMuted} />
                   {badge ? (
                     <View style={styles.badge}>
                       <Text variant="caption" tone="onColor" style={styles.badgeText}>{String(badge)}</Text>
                     </View>
                   ) : null}
                 </View>
-                <Text variant="caption" weight={focused ? '600' : '500'} style={{ color: focused ? color.brand : color.inkMuted }}>{m.label}</Text>
+                <Text variant="caption" weight={focused ? '700' : '500'} style={{ color: focused ? color.accentInk : color.inkMuted }}>{m.label}</Text>
               </Pressable>
             );
           })}
@@ -58,7 +59,7 @@ export function makeNavigationBar(meta: TabMeta) {
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: color.surface, alignItems: 'center', borderTopLeftRadius: 24, borderTopRightRadius: 24, ...elevation[1] },
+  bar: { backgroundColor: color.surface, alignItems: 'center', borderTopWidth: 1, borderTopColor: color.line },
   inner: { flexDirection: 'row', width: '100%', maxWidth: 640, height: 68 },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
   pill: { width: 48, height: 28, alignItems: 'center', justifyContent: 'center' },

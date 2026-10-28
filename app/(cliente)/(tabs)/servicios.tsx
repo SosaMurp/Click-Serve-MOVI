@@ -39,7 +39,7 @@ export default function Servicios() {
             icon={vista === 'curso' ? 'clipboard' : vista === 'terminados' ? 'check-circle' : 'x-circle'}
             title={vista === 'curso' ? 'No tienes servicios en curso' : vista === 'terminados' ? 'Aún no terminas ningún servicio' : 'Sin servicios cancelados'}
             body={vista === 'curso' ? 'Cuando pidas un servicio, aquí verás su avance.' : undefined}
-            action={vista === 'curso' ? <Button title="Nueva solicitud" icon="plus" onPress={() => router.push('/nueva-solicitud')} /> : undefined}
+            action={vista === 'curso' ? <Button variant="accent" title="Nueva solicitud" icon="plus" onPress={() => router.push('/nueva-solicitud')} /> : undefined}
           />
         ) : null}
         {items.map((s) => (

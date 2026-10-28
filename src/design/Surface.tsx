@@ -7,22 +7,24 @@ import { color, elevation, radius, space } from './tokens';
 
 export type SurfaceTint = 'plain' | 'sunk' | 'brand' | 'sky' | 'peach' | 'accent' | 'navy';
 
+// Las tintas claras quedan en gris de panel: el diseño es plano y sin bloques pastel.
 const TINTS: Record<SurfaceTint, string> = {
   plain: color.surface,
   sunk: color.surfaceSunk,
   brand: color.brand,
-  sky: color.brandSoft,
+  sky: color.groundAlt,
   peach: color.accentSoft,
-  accent: color.accent,
+  accent: color.accentStrong,
   navy: color.navy,
 };
 
 type SurfaceProps = { children: React.ReactNode; onPress?: () => void; style?: ViewStyle; padded?: boolean; accessibilityLabel?: string; tint?: SurfaceTint; tone?: 'plain' | 'sunk'; flat?: boolean };
 
-// Tarjeta muy redondeada, sin bordes duros y con sombra casi invisible. Las tintas pastel forman bloques.
+// Tarjeta blanca de radio 16 con borde fino y sombra muy suave; las grises (sunk/sky) sin sombra.
 export function Surface({ children, onPress, style, padded = true, accessibilityLabel, tint, tone, flat }: SurfaceProps) {
-  const bg = TINTS[tint || tone || 'plain'];
-  const base = [styles.surface, { backgroundColor: bg }, !flat && (tint || 'plain') === 'plain' ? elevation[1] : null, padded && styles.padded, style];
+  const kind = tint || tone || 'plain';
+  const bg = TINTS[kind];
+  const base = [styles.surface, { backgroundColor: bg }, kind === 'plain' ? styles.bordered : null, !flat && kind === 'plain' ? elevation[1] : null, padded && styles.padded, style];
   if (!onPress) return <View style={base}>{children}</View>;
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={onPress} style={({ pressed }) => [base, pressed && styles.pressed]}>
@@ -49,7 +51,7 @@ type ListItemProps = {
 };
 
 const ICON_TONES = {
-  brand: { bg: color.brandSoft, fg: color.brandInk },
+  brand: { bg: color.groundAlt, fg: color.brandInk },
   success: { bg: color.successSoft, fg: color.successInk },
   danger: { bg: color.dangerSoft, fg: color.dangerInk },
   warning: { bg: color.warningSoft, fg: color.warningInk },
@@ -86,15 +88,16 @@ export function ListItem({ title, subtitle, icon, iconTone = 'neutral', trailing
   );
 }
 
-// Encabezado de sección: texto pequeño gris o título con el círculo azul marino de "ver todo".
-export function SectionHeader({ title, action, onAction, large }: { title: string; action?: string; onAction?: () => void; large?: boolean }) {
+// Encabezado de sección: MAYÚSCULAS pequeñas (SOLICITUD RECIBIDA) o título grande, con "ver todo" opcional.
+export function SectionHeader({ title, action, onAction, large, right }: { title: string; action?: string; onAction?: () => void; large?: boolean; right?: React.ReactNode }) {
   return (
     <View style={styles.section}>
-      <Text variant={large ? 'headline' : 'title'} accessibilityRole="header" style={styles.sectionTitle}>{title}</Text>
+      <Text variant={large ? 'headline' : 'overline'} tone={large ? 'default' : 'muted'} accessibilityRole="header" style={styles.sectionTitle}>{title}</Text>
+      {right}
       {onAction ? (
         action ? (
           <Pressable accessibilityRole="button" onPress={onAction} hitSlop={10} style={styles.sectionAction}>
-            <Text variant="label" tone="brand">{action}</Text>
+            <Text variant="label" weight="700" tone="accent">{action}</Text>
           </Pressable>
         ) : <CircleArrow label={`Ver todo: ${title}`} onPress={onAction} />
       ) : null}
@@ -104,6 +107,7 @@ export function SectionHeader({ title, action, onAction, large }: { title: strin
 
 const styles = StyleSheet.create({
   surface: { borderRadius: radius.lg },
+  bordered: { borderWidth: 1, borderColor: color.line },
   padded: { padding: space.lg },
   pressed: { opacity: 0.92, transform: [{ scale: 0.995 }] },
   divider: { height: 1, backgroundColor: color.line, marginVertical: space.xs },

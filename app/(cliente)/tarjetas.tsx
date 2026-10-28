@@ -45,7 +45,7 @@ export default function Tarjetas() {
       {!loading && !list.length ? <EmptyState icon="credit-card" title="Sin tarjetas" body="Agrega una tarjeta para pagar tus servicios al terminar." /> : null}
       {list.map((t) => (
         <View key={t.id_metodo} style={styles.item}>
-          <LinearGradient colors={t.predeterminada ? [color.brand, '#4F8FC6'] : [color.navy, '#2B3A4C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
+          <LinearGradient colors={t.predeterminada ? [color.navy, color.navy] : [color.inkSoft, color.inkSoft]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
             <View style={styles.cardTop}>
               <Text variant="title" tone="onColor">{t.marca}</Text>
               {t.predeterminada ? <View style={styles.badge}><Text variant="caption" style={{ color: color.ink }}>Principal</Text></View> : null}

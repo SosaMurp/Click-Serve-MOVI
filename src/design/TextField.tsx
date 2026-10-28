@@ -15,19 +15,20 @@ type Props = TextInputProps & {
   hideLabel?: boolean;
 };
 
-// Campo relleno y redondeado; al enfocar aparece el contorno de marca. El error nombra el problema y cómo corregirlo.
+// Campo blanco con borde gris (3:1) y etiqueta en MAYÚSCULAS arriba; al enfocar el borde pasa a marino.
+// El error nombra el problema y cómo corregirlo.
 export const TextField = forwardRef<TextInput, Props>(function TextField(
   { label, helper, error, icon, password, right, counter, multiline, maxLength, value, style, onFocus, onBlur, hideLabel, ...rest },
   ref
 ) {
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(false);
-  const borderColor = error ? color.danger : focused ? color.brand : 'transparent';
+  const borderColor = error ? color.danger : focused ? color.brand : color.lineStrong;
 
   return (
     <View style={styles.wrap}>
-      {!hideLabel ? <Text variant="label" tone="soft" style={styles.label}>{label}</Text> : null}
-      <View style={[styles.box, { borderColor, backgroundColor: focused ? color.surface : color.surfaceSunk }, multiline && styles.multiline]}>
+      {!hideLabel ? <Text variant="overline" style={styles.label}>{label}</Text> : null}
+      <View style={[styles.box, { borderColor, borderWidth: focused || error ? 2 : 1 }, multiline && styles.multiline]}>
         {icon ? <Icon name={icon} size={20} color={focused ? color.brand : color.inkMuted} /> : null}
         <TextInput
           ref={ref}
@@ -64,8 +65,8 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
 
 const styles = StyleSheet.create({
   wrap: { marginBottom: space.sm },
-  label: { marginBottom: space.xs },
-  box: { minHeight: 54, borderRadius: radius.md, borderWidth: 1.5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, gap: space.sm, minWidth: 0 },
+  label: { marginBottom: space.sm },
+  box: { minHeight: 54, borderRadius: radius.md, backgroundColor: color.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.md, gap: space.sm, minWidth: 0 },
   multiline: { alignItems: 'flex-start', paddingVertical: space.sm },
   input: { flex: 1, minWidth: 0, fontSize: 16, color: color.ink, minHeight: 48, fontFamily: font.body },
   inputMultiline: { minHeight: 96, textAlignVertical: 'top', paddingTop: space.sm },

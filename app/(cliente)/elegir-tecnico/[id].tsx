@@ -166,6 +166,7 @@ export default function ElegirTecnico() {
                 <View style={styles.actions}>
                   <Button title="Ver perfil" variant="outlined" onPress={() => router.push({ pathname: '/tecnico/[id]', params: { id: String(t.id_usuario), solicitud: String(id) } })} style={styles.flex} />
                   <Button
+                    variant="accent"
                     title={isProp ? 'Enviada' : 'Elegir'}
                     icon={isProp ? 'clock' : 'check'}
                     onPress={() => choose(t)}

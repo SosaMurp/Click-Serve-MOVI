@@ -172,6 +172,7 @@ export default function NuevaSolicitud() {
         <View style={styles.footer}>
           <Button title="Limpiar todo" variant="text" onPress={clearAll} disabled={sending} />
           <Button
+            variant="accent"
             title={modo === 'automatica' ? 'Pedir al más cercano' : 'Buscar técnico'}
             icon={modo === 'automatica' ? 'zap' : 'search'}
             onPress={submit}

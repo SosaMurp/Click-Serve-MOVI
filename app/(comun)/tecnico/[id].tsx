@@ -43,7 +43,7 @@ export default function PerfilTecnico() {
   return (
     <Screen
       header={<AppBar title="Perfil del técnico" />}
-      footer={canChoose && t ? <Button title={`Elegir a ${t.nombre}`} icon="check" onPress={choose} loading={sending} disabled={!t.disponible} full size="lg" /> : undefined}
+      footer={canChoose && t ? <Button variant="accent" title={`Elegir a ${t.nombre}`} icon="check" onPress={choose} loading={sending} disabled={!t.disponible} full size="lg" /> : undefined}
     >
       {loading ? <Skeleton height={260} /> : null}
       {error && !t ? <Banner tone="error" title="No pudimos cargar el perfil" body={error} /> : null}

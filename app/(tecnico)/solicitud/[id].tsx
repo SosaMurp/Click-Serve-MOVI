@@ -60,7 +60,7 @@ export default function SolicitudNueva() {
       footer={s && disponible ? (
         <View style={styles.footer}>
           <Button title="Descartar" variant="outlined" onPress={discard} loading={busy === 'd'} disabled={!!busy} style={styles.flex} />
-          <Button title="Aceptar trabajo" icon="check" onPress={accept} loading={busy === 'a'} disabled={!!busy || !user?.aprobado} size="lg" style={styles.flex2} />
+          <Button variant="accent" title="Aceptar trabajo" icon="check" onPress={accept} loading={busy === 'a'} disabled={!!busy || !user?.aprobado} size="lg" style={styles.flex2} />
         </View>
       ) : undefined}
     >

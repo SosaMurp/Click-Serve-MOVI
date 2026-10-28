@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, G, Path, Polygon, Rect } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Line, Polygon, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Avatar } from './Controls';
@@ -9,32 +8,30 @@ import { CircleIcon } from './AppBar';
 import { Button } from './Button';
 import { IconName } from './Icon';
 import { Text } from './Text';
-import { color, font, gradient, radius, space } from './tokens';
+import { color, font, radius, space } from './tokens';
 
-// Versión limpia del logo: pin azul con engrane blanco y cursor naranja (redibujado del logo original).
+export const LOGO_ORANGE = '#F1630F';
+
+// Logo de las referencias: flecha de cursor naranja con una llave inglesa cruzada en diagonal.
+// La llave lleva un contorno blanco que la separa de la flecha. El mismo dibujo genera los íconos de assets/.
 export function LogoMark({ size = 48 }: { size?: number }) {
-  const teeth = Array.from({ length: 8 }, (_, i) => i * 45);
   return (
-    <Svg width={size} height={size * 1.28} viewBox="0 0 100 128" accessibilityLabel="Logo de Click & Serve">
-      <Path d="M50 2C23.5 2 2 23.5 2 50c0 33.5 48 76 48 76s48-42.5 48-76C98 23.5 76.5 2 50 2z" fill={color.brand} />
-      <G>
-        {teeth.map((deg) => (
-          <Rect key={deg} x={44} y={14} width={12} height={12} rx={2.5} fill="#FFFFFF" transform={`rotate(${deg} 50 49)`} />
-        ))}
-        <Circle cx={50} cy={49} r={25} fill="#FFFFFF" />
-        <Circle cx={50} cy={49} r={15} fill={color.brand} />
-        <Circle cx={50} cy={49} r={10.5} fill="#FFFFFF" />
-      </G>
-      <Polygon points="47,41 47,66 53.5,59.5 58.5,70 63.5,67.5 58.5,57.5 67,57.5" fill={color.accent} stroke="#FFFFFF" strokeWidth={2.5} strokeLinejoin="round" />
+    <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel="Logo de Click & Serve">
+      <Polygon points="94,6 6,40 44,56 60,94" fill={LOGO_ORANGE} stroke={LOGO_ORANGE} strokeWidth={5} strokeLinejoin="round" />
+      <Line x1={14} y1={86} x2={52} y2={48} stroke="#FFFFFF" strokeWidth={19} strokeLinecap="round" />
+      <Circle cx={60} cy={40} r={17} fill="#FFFFFF" />
+      <Line x1={14} y1={86} x2={52} y2={48} stroke={LOGO_ORANGE} strokeWidth={10} strokeLinecap="round" />
+      <Circle cx={60} cy={40} r={13} fill={LOGO_ORANGE} />
+      <Rect x={59.5} y={27.5} width={9} height={13} fill="#FFFFFF" transform="rotate(45 64 34)" />
+      <Circle cx={19} cy={81} r={2.6} fill="#FFFFFF" />
     </Svg>
   );
 }
 
 export function Wordmark({ size = 28, light }: { size?: number; light?: boolean }) {
   return (
-    <Text style={{ fontFamily: font.headingBold, fontSize: size, lineHeight: size * 1.15 }} accessibilityRole="header">
-      <Text style={{ fontFamily: font.headingBold, fontSize: size, color: light ? color.inkOnColor : color.brand }}>Click</Text>
-      <Text style={{ fontFamily: font.headingBold, fontSize: size, color: color.accent }}>&amp;Serve</Text>
+    <Text style={{ fontFamily: font.headingBold, fontSize: size, lineHeight: size * 1.2, color: light ? color.inkOnColor : color.ink, letterSpacing: -0.3 }} accessibilityRole="header">
+      Click &amp; Serve
     </Text>
   );
 }
@@ -44,23 +41,19 @@ export function Logo({ size = 40, tagline }: { size?: number; tagline?: boolean 
     <View style={styles.logo}>
       <LogoMark size={size} />
       <View>
-        <Wordmark size={size * 0.62} />
-        {tagline ? <Text variant="caption" tone="muted" style={styles.tagline}>TECH &amp; SERVICE · LÁZARO CÁRDENAS</Text> : null}
+        <Wordmark size={size * 0.55} />
+        {tagline ? <Text variant="overline" tone="muted" style={styles.tagline}>Lázaro Cárdenas</Text> : null}
       </View>
     </View>
   );
 }
 
-// Tarjeta destacada con degradado diagonal azul de marca → cielo → durazno.
+// Tarjeta destacada en azul marino liso (comprobantes, saldo): sin degradados.
 export function HeroCard({ children, style }: { children: React.ReactNode; style?: object }) {
-  return (
-    <LinearGradient colors={gradient.hero as unknown as [string, string, ...string[]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, style]}>
-      {children}
-    </LinearGradient>
-  );
+  return <View style={[styles.hero, style]}>{children}</View>;
 }
 
-// Encabezado de pestaña: avatar + "Bienvenido de nuevo / nombre" y botones circulares blancos.
+// Encabezado de pestaña: avatar + "Bienvenido de nuevo / nombre" y botones circulares.
 export function HomeHeader({ nombre, apellido, fotoUrl, actions = [], onAvatar }: {
   nombre?: string | null;
   apellido?: string | null;
@@ -88,19 +81,19 @@ export function HomeHeader({ nombre, apellido, fotoUrl, actions = [], onAvatar }
   );
 }
 
-// Botón principal en píldora flotando sobre el contenido ("+ Nueva solicitud").
+// Botón principal flotando sobre el contenido ("+ Nueva solicitud").
 export function FloatingAction({ title, icon = 'plus', onPress, bottom = 16 }: { title: string; icon?: IconName; onPress: () => void; bottom?: number }) {
   return (
     <View pointerEvents="box-none" style={[styles.fab, { bottom }]}>
-      <Button title={title} icon={icon} onPress={onPress} floating size="lg" />
+      <Button title={title} icon={icon} onPress={onPress} floating size="lg" variant="accent" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   logo: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  tagline: { letterSpacing: 0.6, marginTop: 2 },
-  hero: { borderRadius: radius.lg, padding: space.lg },
+  tagline: { marginTop: 2 },
+  hero: { borderRadius: radius.lg, padding: space.lg, backgroundColor: color.navy },
   header: { backgroundColor: color.ground, alignItems: 'center' },
   headerInner: { width: '100%', maxWidth: 640, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, paddingBottom: space.sm, gap: space.md },
   who: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.md },

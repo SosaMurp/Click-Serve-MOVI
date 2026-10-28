@@ -1,15 +1,15 @@
 import React from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { color, gradient, Icon, IconName, radius, space, Text } from '../../design';
+import { color, Icon, IconName, radius, space, Text } from '../../design';
 import type { ResumenTecnico } from '../../api/types';
 import { formatMoney } from '../../lib/format';
 import { useAvailability } from '../../state/availability';
 
-// RF-21: tarjeta héroe del técnico. En línea usa el degradado de marca; desconectado, azul marino.
+// RF-21: tarjeta héroe del técnico en azul marino liso.
 export function OnlineCard({ resumen }: { resumen: ResumenTecnico | null }) {
   const { disponible, cambiando, setDisponible } = useAvailability();
-  const colors = (disponible ? gradient.hero : [color.navy, '#24364A']) as unknown as [string, string, ...string[]];
+  const colors = [color.navy, color.navy] as [string, string];
   const mini: { icon: IconName; label: string; value: string }[] = [
     { icon: 'bell', label: 'Nuevas', value: String(resumen?.contadores.nuevas ?? '—') },
     { icon: 'tool', label: 'En curso', value: String(resumen?.contadores.en_curso ?? '—') },

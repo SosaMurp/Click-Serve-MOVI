@@ -69,7 +69,7 @@ export default function Cotizar() {
             <Text variant="caption" tone="muted">Total (IVA incluido)</Text>
             <Money value={total} size="lg" />
           </View>
-          <Button title="Enviar al cliente" icon="send" onPress={submit} loading={sending} size="lg" style={styles.flex} />
+          <Button variant="accent" title="Enviar al cliente" icon="send" onPress={submit} loading={sending} size="lg" style={styles.flex} />
         </View>
       )}
     >

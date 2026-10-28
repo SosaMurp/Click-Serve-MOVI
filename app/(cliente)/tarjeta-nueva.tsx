@@ -57,7 +57,7 @@ export default function TarjetaNueva() {
       header={<AppBar title="Agregar tarjeta" confirmDiscard={!!(digits || name)} />}
       footer={<Button title="Guardar tarjeta" icon="lock" onPress={save} loading={saving} full size="lg" />}
     >
-      <LinearGradient colors={[color.brand, '#4F8FC6', '#F3B98A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
+      <LinearGradient colors={[color.navy, color.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
         <Text variant="title" tone="onColor">{brand || 'Tarjeta'}</Text>
         <Text variant="number" tone="onColor" tabular style={styles.num}>{formatCardNumber(digits) || '•••• •••• •••• ••••'}</Text>
         <View style={styles.cardRow}>

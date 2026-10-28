@@ -4,19 +4,24 @@ import { Icon, IconName } from './Icon';
 import { Text } from './Text';
 import { color, elevation, radius, touch } from './tokens';
 
-// primary: naranja del logo con texto tinta (contraste AA); filled: azul de marca con texto blanco.
-type Variant = 'primary' | 'filled' | 'tonal' | 'outlined' | 'text' | 'danger' | 'success' | 'white';
+// primary: azul marino con texto blanco (INICIAR SESIÓN); accent: naranja para la acción destacada
+// (REGISTRARME, ACEPTAR TRABAJO). filled queda como sinónimo de primary.
+type Variant = 'primary' | 'accent' | 'filled' | 'tonal' | 'outlined' | 'text' | 'danger' | 'success' | 'white';
 
 const VARIANTS: Record<Variant, { bg: string; fg: string; border?: string; pressed: string }> = {
-  primary: { bg: color.accent, fg: color.ink, pressed: color.accentPressed },
+  primary: { bg: color.brand, fg: color.inkOnColor, pressed: color.brandDeep },
+  accent: { bg: color.accentStrong, fg: color.inkOnColor, pressed: color.accentPressed },
   filled: { bg: color.brand, fg: color.inkOnColor, pressed: color.brandDeep },
   tonal: { bg: color.brandSoft, fg: color.brandInk, pressed: color.brandMid },
   outlined: { bg: color.surface, fg: color.ink, border: color.lineStrong, pressed: color.surfaceSunk },
-  text: { bg: 'transparent', fg: color.brandInk, pressed: color.brandSoft },
+  text: { bg: 'transparent', fg: color.brandInk, pressed: color.surfaceSunk },
   danger: { bg: color.danger, fg: color.inkOnColor, pressed: color.dangerInk },
   success: { bg: color.success, fg: color.inkOnColor, pressed: color.successInk },
   white: { bg: color.surface, fg: color.ink, pressed: color.surfaceSunk },
 };
+
+// md 52 dp; lg 56 dp; xl 56 dp con letra de 17 px para las pantallas del cliente.
+const HEIGHTS = { md: 52, lg: 56, xl: 56 } as const;
 
 type Props = {
   title: string;
@@ -27,7 +32,7 @@ type Props = {
   loading?: boolean;
   disabled?: boolean;
   full?: boolean;
-  size?: 'md' | 'lg';
+  size?: 'md' | 'lg' | 'xl';
   style?: ViewStyle;
   accessibilityHint?: string;
   floating?: boolean;
@@ -50,7 +55,7 @@ export function Button({ title, onPress, variant = 'primary', icon, iconRight, l
         return [
           styles.base,
           {
-            height: size === 'lg' ? 56 : touch.min,
+            minHeight: Math.max(HEIGHTS[size], touch.min),
             backgroundColor: state.pressed || hovered ? v.pressed : v.bg,
             borderColor: v.border || 'transparent',
             borderWidth: v.border ? 1 : 0,
@@ -69,7 +74,16 @@ export function Button({ title, onPress, variant = 'primary', icon, iconRight, l
       ) : (
         <View style={styles.row}>
           {icon ? <Icon name={icon} size={20} color={v.fg} /> : null}
-          <Text variant="label" style={{ color: v.fg }} numberOfLines={1}>{title}</Text>
+          {/* Los botones llenos van en MAYÚSCULAS y negrita; los de texto, como enlace en negrita. */}
+          <Text
+            variant={variant === 'text' ? 'label' : 'button'}
+            weight={variant === 'text' ? '700' : undefined}
+            style={[{ color: v.fg }, size === 'xl' ? styles.xlText : null]}
+            numberOfLines={2}
+            align="center"
+          >
+            {title}
+          </Text>
           {iconRight ? <Icon name={iconRight} size={20} color={v.fg} /> : null}
         </View>
       )}
@@ -124,8 +138,9 @@ export function CircleArrow({ onPress, label, icon = 'arrow-right' }: { onPress?
 }
 
 const styles = StyleSheet.create({
-  base: { borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  base: { borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 1 },
+  xlText: { fontSize: 17, lineHeight: 22 },
   focus: { outlineStyle: 'solid', outlineWidth: 3, outlineColor: color.focus, outlineOffset: 2 } as object,
   iconBtn: { width: touch.min, height: touch.min, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   bordered: { borderWidth: 1, borderColor: color.line },

@@ -16,13 +16,11 @@ const toneColor: Record<TextTone, string> = {
   warning: color.warningInk,
 };
 
-const HEADING_VARIANTS: TypeVariant[] = ['display', 'number', 'headline', 'appbar', 'title'];
-
 // Con fuentes personalizadas el peso se elige por familia (en Android fontWeight no la cambia).
-function familyFor(variant: TypeVariant, weight?: TextStyle['fontWeight']): string | undefined {
+// Toda la app usa Inter: el peso decide la familia también en los títulos.
+function familyFor(weight?: TextStyle['fontWeight']): string | undefined {
   if (!weight) return undefined;
   const w = String(weight);
-  if (HEADING_VARIANTS.includes(variant)) return w >= '700' ? font.headingBold : w >= '600' ? font.heading : font.headingMedium;
   if (w >= '700') return font.bodyBold;
   if (w >= '600') return font.bodySemibold;
   if (w >= '500') return font.bodyMedium;
@@ -38,7 +36,7 @@ type Props = TextProps & {
 };
 
 export function Text({ variant = 'body', tone = 'default', align, tabular, weight, style, ...rest }: Props) {
-  const family = familyFor(variant, weight);
+  const family = familyFor(weight);
   return (
     <RNText
       maxFontSizeMultiplier={1.6}

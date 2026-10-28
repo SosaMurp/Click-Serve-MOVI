@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { IconButton } from './Button';
 import { IconName } from './Icon';
 import { Text } from './Text';
-import { color, elevation, space } from './tokens';
+import { color, space } from './tokens';
 import { dialog } from '../ui/dialog';
 import { goBack as navGoBack } from '../lib/nav';
 
@@ -87,13 +87,9 @@ export function AppBar({ title, subtitle, back = true, onBack, confirmDiscard, a
   );
 }
 
-// Botón circular blanco con sombra casi invisible (encabezados).
+// Botón circular blanco con borde fino (encabezados).
 export function CircleIcon({ icon, label, onPress, badge }: { icon: IconName; label: string; onPress?: () => void; badge?: number | boolean }) {
-  return (
-    <View style={styles.circle}>
-      <IconButton icon={icon} label={label} onPress={onPress} background={color.surface} badge={badge} size={20} />
-    </View>
-  );
+  return <IconButton icon={icon} label={label} onPress={onPress} background={color.surface} badge={badge} size={20} bordered />;
 }
 
 const styles = StyleSheet.create({
@@ -103,5 +99,4 @@ const styles = StyleSheet.create({
   sideRight: { justifyContent: 'flex-end' },
   titles: { flex: 1 },
   placeholder: { width: 48 },
-  circle: { borderRadius: 24, ...elevation[1] },
 });

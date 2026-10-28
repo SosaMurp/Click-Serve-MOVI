@@ -6,26 +6,31 @@ import { color, font, radius, space } from './tokens';
 type Props = {
   length?: number;
   onComplete: (code: string) => void;
+  onChange?: (code: string) => void;
   disabled?: boolean;
   error?: string | null;
   resetKey?: number;
 };
 
 // RNF-18: el código se verifica solo al teclear el último dígito y el foco avanza sin tocar nada.
-export function OtpField({ length = 6, onComplete, disabled, error, resetKey }: Props) {
+// onChange deja que la pantalla habilite su botón VERIFICAR CÓDIGO con el código completo.
+export function OtpField({ length = 6, onComplete, onChange: onCodeChange, disabled, error, resetKey }: Props) {
   const [code, setCode] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     setCode('');
+    onCodeChange?.('');
     const t = setTimeout(() => inputRef.current?.focus(), 50);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey]);
 
   const onChange = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, length);
     setCode(digits);
+    onCodeChange?.(digits);
     if (digits.length === length) onComplete(digits);
   };
 
@@ -39,7 +44,7 @@ export function OtpField({ length = 6, onComplete, disabled, error, resetKey }: 
               key={i}
               style={[
                 styles.cell,
-                { borderColor: error ? color.danger : active ? color.brand : code[i] ? color.ink : color.lineStrong, borderWidth: active || error ? 2 : 1.5 },
+                { borderColor: error ? color.danger : active ? color.accentStrong : code[i] ? color.ink : color.lineStrong, borderWidth: active || error ? 2 : 1 },
               ]}
             >
               <Text style={styles.digit} tabular>{code[i] || ''}</Text>
@@ -69,8 +74,9 @@ export function OtpField({ length = 6, onComplete, disabled, error, resetKey }: 
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'center', gap: space.sm },
-  cell: { width: 46, height: 58, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface },
-  digit: { fontFamily: font.heading, fontSize: 26, lineHeight: 32, color: color.ink },
+  // Flexibles hasta 52 dp: seis cajas caben también en una pantalla de 320 px.
+  cell: { flex: 1, maxWidth: 52, height: 56, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface },
+  digit: { fontFamily: font.heading, fontSize: 24, lineHeight: 30, color: color.ink },
   hidden: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, opacity: 0.011, color: 'transparent', fontSize: 1 },
   error: { marginTop: space.sm },
 });

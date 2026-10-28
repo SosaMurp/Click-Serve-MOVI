@@ -145,7 +145,7 @@ export default function Orden() {
             <QuoteCard cotizacion={s.cotizacion} extras={s.extras} total={s.monto_total} title="Cotización para aprobar" />
             <View style={styles.row}>
               <Button title="Rechazar" variant="outlined" onPress={() => approveQuote('RECHAZAR')} loading={busy === 'RECHAZAR'} disabled={!!busy} style={styles.flex} />
-              <Button title="Aprobar" icon="check" onPress={() => approveQuote('ACEPTAR')} loading={busy === 'ACEPTAR'} disabled={!!busy} style={styles.flex} />
+              <Button variant="accent" title="Aprobar" icon="check" onPress={() => approveQuote('ACEPTAR')} loading={busy === 'ACEPTAR'} disabled={!!busy} style={styles.flex} />
             </View>
           </View>
         ) : null}
@@ -154,7 +154,7 @@ export default function Orden() {
           <Surface tint="peach" style={styles.gap}>
             <Text variant="title">El técnico terminó</Text>
             <Text variant="bodySm" tone="soft">Revisa la evidencia y confirma que el trabajo quedó bien para liberar el pago.</Text>
-            <Button title="Revisar y pagar" icon="check-circle" onPress={() => router.push({ pathname: '/orden/[id]/confirmar', params: { id } })} style={styles.mt} />
+            <Button variant="accent" title="Revisar y pagar" icon="check-circle" onPress={() => router.push({ pathname: '/orden/[id]/confirmar', params: { id } })} style={styles.mt} />
           </Surface>
         ) : null}
 

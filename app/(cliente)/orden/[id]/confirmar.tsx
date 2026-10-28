@@ -69,7 +69,7 @@ export default function Confirmar() {
             <Text variant="caption" tone="muted">Total a pagar</Text>
             <Money value={s.monto_total} size="lg" />
           </View>
-          <Button title="Enviar y finalizar" icon="check-circle" onPress={submit} loading={sending} disabled={!conforme || !metodo} size="lg" style={styles.flex} />
+          <Button variant="accent" title="Enviar y finalizar" icon="check-circle" onPress={submit} loading={sending} disabled={!conforme || !metodo} size="lg" style={styles.flex} />
         </View>
       )}
     >
