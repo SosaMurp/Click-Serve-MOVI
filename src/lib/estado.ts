@@ -37,6 +37,27 @@ export function estadoInfo(estado: EstadoOrden, rol: 'cliente' | 'tecnico' | str
   return (rol === 'tecnico' ? TECNICO : CLIENTE)[estado] || { label: estado, tone: 'neutral', icon: 'help-circle', hint: '' };
 }
 
+type ClientText = { titulo: string; detalle: string; accion?: string };
+
+// Pantallas del cliente (enfoque CILIM): el estado en una frase llana y, si le toca hacer algo,
+// el texto del único botón principal.
+export function clientStatusText(s: { estado: EstadoOrden; tecnico?: { nombre: string } | null }): ClientText {
+  const quien = s.tecnico?.nombre || 'Tu técnico';
+  const textos: Record<EstadoOrden, ClientText> = {
+    PENDIENTE: { titulo: 'Buscando técnico', detalle: 'Te avisamos en cuanto un técnico acepte.' },
+    ASIGNADA: { titulo: 'Tu técnico confirmó', detalle: `${quien} va a atenderte. Te avisamos cuando salga.` },
+    EN_CAMINO: { titulo: 'Tu técnico va en camino', detalle: 'Puedes ver por dónde va en el mapa.' },
+    EN_SITIO: { titulo: 'Tu técnico llegó', detalle: 'Está revisando la falla para darte el precio.' },
+    ESPERANDO_APROBACION: { titulo: 'Revisa el precio', detalle: `${quien} te mandó el precio. Apruébalo para que empiece.`, accion: 'Revisar el precio' },
+    EN_PROCESO: { titulo: 'Están trabajando', detalle: `${quien} está haciendo el trabajo.` },
+    POR_CONFIRMAR: { titulo: 'Confirma que quedó', detalle: 'Revisa el trabajo y paga solo si quedó bien.', accion: 'Confirmar y pagar' },
+    FINALIZADA: { titulo: 'Servicio terminado', detalle: 'Tienes 90 días de garantía.' },
+    SUSPENDIDA: { titulo: 'Servicio detenido', detalle: 'Hay un reporte abierto. Elige cómo resolverlo.', accion: 'Ver qué pasó' },
+    CANCELADA: { titulo: 'Servicio cancelado', detalle: 'No se hizo ningún cargo.' },
+  };
+  return textos[s.estado] || { titulo: s.estado, detalle: '' };
+}
+
 export const STEPS: { key: string; label: string }[] = [
   { key: 'solicitud', label: 'Solicitud enviada' },
   { key: 'asignada', label: 'Técnico asignado' },

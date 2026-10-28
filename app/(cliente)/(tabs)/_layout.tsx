@@ -3,11 +3,12 @@ import { makeNavigationBar, TabBarProps, TabMeta } from '@/src/design';
 
 const META: TabMeta = {
   inicio: { icon: 'home', iconActive: 'home', label: 'Inicio' },
-  servicios: { icon: 'clipboard', iconActive: 'clipboard', label: 'Servicios' },
+  servicios: { icon: 'clipboard', iconActive: 'clipboard', label: 'Mis servicios' },
   mensajes: { icon: 'message-circle', iconActive: 'message-circle', label: 'Mensajes' },
-  cuenta: { icon: 'user', iconActive: 'user', label: 'Perfil' },
+  cuenta: { icon: 'user', iconActive: 'user', label: 'Mi cuenta' },
 };
-const NavigationBar = makeNavigationBar(META);
+// Barra más grande para el cliente (CILIM): íconos de 26 y etiquetas de 14 px.
+const NavigationBar = makeNavigationBar(META, { comfortable: true });
 
 export default function ClienteTabs() {
   return (

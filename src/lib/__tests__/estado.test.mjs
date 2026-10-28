@@ -31,3 +31,14 @@ test('isActive distingue órdenes vivas de cerradas', () => {
   assert.equal(isActive('FINALIZADA'), false);
   assert.equal(isActive('CANCELADA'), false);
 });
+
+test('el cliente lee su servicio en palabras llanas y con la siguiente acción', async () => {
+  const { clientStatusText } = await import('../estado.ts');
+  assert.equal(clientStatusText({ estado: 'PENDIENTE' }).titulo, 'Buscando técnico');
+  assert.equal(clientStatusText({ estado: 'PENDIENTE' }).accion, undefined);
+  assert.match(clientStatusText({ estado: 'ASIGNADA', tecnico: { nombre: 'Luis' } }).detalle, /Luis/);
+  assert.equal(clientStatusText({ estado: 'EN_CAMINO' }).titulo, 'Tu técnico va en camino');
+  assert.equal(clientStatusText({ estado: 'ESPERANDO_APROBACION' }).accion, 'Revisar el precio');
+  assert.equal(clientStatusText({ estado: 'POR_CONFIRMAR' }).accion, 'Confirmar y pagar');
+  assert.equal(clientStatusText({ estado: 'FINALIZADA' }).titulo, 'Servicio terminado');
+});

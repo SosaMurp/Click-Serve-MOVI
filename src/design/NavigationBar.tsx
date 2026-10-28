@@ -15,13 +15,16 @@ export type TabBarProps = {
 };
 
 // Barra inferior blanca: ícono de contorno fino con etiqueta; la pestaña activa va en naranja
-// (ícono #E25900, texto #B84A00 para que se lea con 4.5:1).
-export function makeNavigationBar(meta: TabMeta) {
+// (ícono #E25900, texto #B84A00 para que se lea con 4.5:1). `comfortable` agranda íconos y etiquetas
+// para las pantallas del cliente (CILIM).
+export function makeNavigationBar(meta: TabMeta, { comfortable = false }: { comfortable?: boolean } = {}) {
+  const iconSize = comfortable ? 26 : 22;
+  const labelStyle = comfortable ? styles.labelLg : null;
   return function NavigationBar({ state, descriptors, navigation }: TabBarProps) {
     const insets = useSafeAreaInsets();
     return (
       <View style={[styles.bar, { paddingBottom: insets.bottom }]} accessibilityRole="tablist">
-        <View style={styles.inner}>
+        <View style={[styles.inner, comfortable && styles.innerLg]}>
           {state.routes.map((route, index) => {
             const m = meta[route.name];
             if (!m) return null;
@@ -41,14 +44,14 @@ export function makeNavigationBar(meta: TabMeta) {
                 style={styles.item}
               >
                 <View style={styles.pill}>
-                  <Icon name={focused ? m.iconActive : m.icon} size={22} color={focused ? color.accentStrong : color.inkMuted} />
+                  <Icon name={focused ? m.iconActive : m.icon} size={iconSize} color={focused ? color.accentStrong : color.inkMuted} />
                   {badge ? (
                     <View style={styles.badge}>
                       <Text variant="caption" tone="onColor" style={styles.badgeText}>{String(badge)}</Text>
                     </View>
                   ) : null}
                 </View>
-                <Text variant="caption" weight={focused ? '700' : '500'} style={{ color: focused ? color.accentInk : color.inkMuted }}>{m.label}</Text>
+                <Text variant="caption" weight={focused ? '700' : '500'} style={[{ color: focused ? color.accentInk : color.inkMuted }, labelStyle]}>{m.label}</Text>
               </Pressable>
             );
           })}
@@ -61,6 +64,8 @@ export function makeNavigationBar(meta: TabMeta) {
 const styles = StyleSheet.create({
   bar: { backgroundColor: color.surface, alignItems: 'center', borderTopWidth: 1, borderTopColor: color.line },
   inner: { flexDirection: 'row', width: '100%', maxWidth: 640, height: 68 },
+  innerLg: { height: 76 },
+  labelLg: { fontSize: 14, lineHeight: 18 },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
   pill: { width: 48, height: 28, alignItems: 'center', justifyContent: 'center' },
   badge: {
